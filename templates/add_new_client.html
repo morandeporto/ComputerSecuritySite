@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .login-container {
+            width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .login-container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .back-button {
+            background-color: #337ab7;
+        }
+        .back-button:hover {
+            background-color: #286090;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>Add New Client</h1>
+        <form method="GET" action="{{ url_for('dashboard', clientname=clientname) }}">
+            <label for="clientname">Client Name:</label>
+            <input type="text" id="clientname" name="clientname" required>
+
+            <label for="Clientemail">Email:</label>
+            <input type="email" id="Clientemail" name="Clientemail" required>
+
+            <label for="internet_package_type">Internet Package Type:</label>
+            <select id="internet_package_type" name="internet_package_type" required>
+                <option value="1">Basic</option>
+                <option value="2">Standard</option>
+                <option value="3">Premium</option>
+            </select>
+
+            <button type="submit">Add New Client</button>
+        </form>
+        <form method="GET" action="{{ url_for('dashboard') }}">
+            <button class="back-button" type="submit">Back to Dashboard Page</button>
+        </form>
+    </div>
+</body>
+</html>
