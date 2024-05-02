@@ -65,3 +65,17 @@ div.checkbox label {
     vertical-align: middle;
     margin-right: 10px;
 }
+.flashes {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    text-align: center; /* Center the flashed messages */
+}
+
+.flashes li {
+    color: red;
+    display: block; /* Change to block to center properly */
+    margin-bottom: 10px; /* Add some bottom margin between messages */
+    width: 100%; /* Ensure messages take up full width */
+    text-align: center; /* Center the text within the messages */
+}
