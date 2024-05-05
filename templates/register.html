@@ -61,39 +61,57 @@
             vertical-align: middle;
             margin-right: 10px;
         }
+        .error_message{
+        color: red;
+        }
+
     </style>
     <title>New User Register</title>
 </head>
 <body>
-    <div class="login-container">
-        <h1>Create New Account</h1>
-        <form method="post" action="{{ url_for('login') }}">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+<div class="login-container">
+    <h1>Create New Account</h1>
+    <form method="post" action="{{ url_for('register') }}">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
 
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
 
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
 
-            <label for="internet_package_type">Internet Package Type:</label>
-            <select id="internet_package_type" name="internet_package_type" required>
-                <option value="1">Basic</option>
-                <option value="2">Standard</option>
-                <option value="3">Premium</option>
-            </select>
+        <label for="internet_package_type">Internet Package Type:</label>
+        <select id="internet_package_type" name="internet_package_type" required>
+            <option value="1">Basic</option>
+            <option value="2">Standard</option>
+            <option value="3">Premium</option>
+        </select>
 
-            <label for="publish_sectors">Publish Sectors:</label>
-            {% for sector in sectors %}
-                <div class="checkbox">
-                    <input type="checkbox" id="{{ sector }}" name="publish_sectors[]" value="{{ sector }}">
-                    <label for="{{ sector }}">{{ sector }}</label>
-                </div>
+        <label for="publish_sectors">Publish Sectors:</label>
+        {% for sector in sectors %}
+        <div class="checkbox">
+            <input type="checkbox" id="{{ sector }}" name="publish_sectors[]" value="{{ sector }}">
+            <label for="{{ sector }}">{{ sector }}</label>
+        </div>
+        {% endfor %}
+
+        <button type="submit">Create New Account</button>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul class="flashes">
+            {% for message in messages %}
+            <li class="error_message">{{ message }}</li>
             {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
 
-            <button type="submit">Create New Account</button>
-        </form>
-    </div>
+    </form>
+        <form method="GET" action="{{ url_for('login') }}">
+        <button type="submit">Back to login page</button>
+    </form>
+
+</div>
 </body>
 </html>

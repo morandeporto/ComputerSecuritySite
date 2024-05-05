@@ -48,27 +48,28 @@
         form {
             margin-top: 20px;
         }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        {% if clientname %}
-        <div class="success-message">
-            <h2>Client: {{ clientname }} added successfully!</h2>
-        </div>
-        {% endif %}
-
-        <h1>Welcome, {{ username }}!</h1>
-        <p>Internet Package Type: {{ internet_package_type }}</p>
-        <p>Publish Sectors: {{ publish_sectors }}</p>
-
-        <!-- Logout Form -->
-        <form method="post" action="{{ url_for('login') }}">
-            <button type="submit">Logout</button>
-        </form>
-        <form method="GET" action="{{ url_for('add_new_client') }}">
-            <button type="submit">Add New Client</button>
-        </form>
+<div class="container">
+    {% if clientname %}
+    <div class="success-message">
+        <h2>Client: {{ clientname }} added successfully!</h2>
     </div>
+    {% endif %}
+
+    <h1>Welcome, {{ username }}!</h1>
+    <p>Internet Package Type: {{ internet_package_type }}</p>
+    <p>Publish Sectors: {{ publish_sectors }}</p>
+
+    <!-- Logout Form -->
+    <form method="GET" action="{{ url_for('login') }}">
+        <button type="submit">Logout</button>
+    </form>
+    <form method="GET" action="{{ url_for('add_new_client') }}">
+        <button type="submit">Add New Client</button>
+    </form>
+</div>
 </body>
 </html>
