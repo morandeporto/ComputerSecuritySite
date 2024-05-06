@@ -10,11 +10,13 @@ def create_virtual_environment():
 
 def install_requirements():
     print("Installing requirements...")
-    subprocess.run(["env/bin/pip", "install", "-r", "requirements.txt"])
+    pip_path = os.path.join('env', 'Scripts', 'pip') if os.name == 'nt' else os.path.join('env', 'bin', 'pip')
+    subprocess.run([pip_path, "install", "-r", "requirements.txt"])
 
 def run_in_virtual_environment():
     print("Starting new shell session in virtual environment...")
-    subprocess.run(" ".join(["env/bin/python"] + sys.argv + ['--venv']), shell=True)
+    venv_python = os.path.join('env', 'Scripts', 'python') if os.name == 'nt' else os.path.join('env', 'bin', 'python')
+    subprocess.run(" ".join([venv_python] + sys.argv + ['--venv']), shell=True)
 
 def load_environment_variables():
     print("Loading environment variables...")
@@ -56,7 +58,8 @@ def execute_initialization_script(docker_client, password):
 
 def run_backend():
     print("Running backend...")
-    subprocess.run(["env/bin/python", "backend.py"])
+    python_path = os.path.join('env', 'Scripts', 'python') if os.name == 'nt' else os.path.join('env', 'bin', 'python')
+    subprocess.run([python_path, "backend.py"])
 
 def main():
     if '--venv' not in sys.argv:
