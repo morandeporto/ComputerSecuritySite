@@ -17,11 +17,11 @@ python --version
 ```
 
 ### Setup / Run
-> The setup of the program or re-running can be done automatically with the same file,`setup.py`. If you don't want to recreate the database, choose `n` for the question regarding removing the database.
+> The setup of the program or re-running can be done automatically with the same command,`docker-compose up`.
 
 1. Change your desired password in the `.env` file. Make sure your password meets [Microsoft's Password Policy](https://learn.microsoft.com/en-us/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity).
 
-2. Run the setup file!
+2. Run the `docker-compose.yml` file!
 ```bash
-python setup.py
+docker-compose up
 ```
