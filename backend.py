@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, make_response
 import pymssql
 import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
-app.secret_key = os.environ['MSSQL_SA_PASSWORD']
-password = os.environ['MSSQL_SA_PASSWORD']
-conn = pymssql.connect("127.0.0.1", "sa", password, "CommunicationLTD")
+
+load_dotenv()
+app.secret_key = password = os.getenv('MSSQL_SA_PASSWORD')
+
+conn = pymssql.connect("172.17.0.1", "sa", password, "CommunicationLTD")
 cursor = conn.cursor(as_dict=True)
 
 
@@ -96,4 +99,4 @@ def add_new_client():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
