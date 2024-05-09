@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>set new password Page</title>
+</head>
+    <body>
+        <h3 >Communication LTD set new password Page</h3>
+        </div>
+        <hr/>
+        {%- for category, message in get_flashed_messages(with_categories=true) %}
+        <div class="alert alert-danger">
+            {{ message  }}
+        </div>
+        {%- endfor %}
+
+        <form action="{{ url_for('set_new_pwd')  }}" method="POST">
+            <label for="new_pwd" >Set new Password</label><br>
+            <input type="text" name="new_pwd" placeholder="new_pwd"><br>
+            <input type="submit" value="Submit"><br>
+        </form>
+    </body>
+</html>
