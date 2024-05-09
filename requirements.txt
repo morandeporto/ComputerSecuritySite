@@ -1,4 +1,9 @@
 docker
 Flask
 pymssql
-python-dotenv
+Flask==3.0.1
+Flask-Mail==0.9.1
+password-strength==0.0.3.post2
+pymssql==2.2.11
+pyodbc==5.1.0
+python-dotenv==1.0.1

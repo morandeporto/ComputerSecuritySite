@@ -96,6 +96,12 @@
         <h2>User added successfully! you can connect to your account</h2>
     </div>
     {% endif %}
+        {% if password_changed %}
+    <div class="success-message">
+        <h2>Password changed successfully! you can connect to your account</h2>
+    </div>
+    {% endif %}
+
 
     <h1>Login to Your Account</h1>
     <form method="post" action="{{ url_for('login') }}">

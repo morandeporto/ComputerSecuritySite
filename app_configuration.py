@@ -5,6 +5,7 @@ import json
 
 from password_strength import PasswordPolicy
 
+SALT_LENGTH = 32
 
 def app_configuration(app: Flask):
     load_dotenv()
@@ -28,4 +29,4 @@ def get_password_policy():
         special=password_config["special_char"],  # need min. 1 special characters
         nonletters=password_config["nonletters"]  # need min. 1 non-letter characters (digits, specials, anything)
     )
-    return policy
+    return policy, password_config["salt_len"]

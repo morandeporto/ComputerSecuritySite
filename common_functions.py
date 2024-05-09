@@ -16,7 +16,7 @@ def get_user_data_from_db(username=None, password=None):
         if username and password:
             cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))
         else:
-            cursor.execute(f"SELECT * FROM users WHERE username = %s", (username))
+            cursor.execute(f"SELECT * FROM users WHERE username = %s", (username,))
         return cursor.fetchone()
 
 
@@ -28,24 +28,31 @@ def get_all_sectors_names_from_db():
     return sectors
 
 
+def get_user_by_username(username):
+    with conn.cursor(as_dict=True) as cursor:
+        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+    return user
+
+
 def check_if_user_exists_using_email(email: str) -> bool:
     with conn.cursor(as_dict=True) as cursor:
-        cursor.execute("SELECT * FROM users WHERE enail = %s ", (email))
+        cursor.execute("SELECT * FROM users WHERE email = %s ", (email,))
         if cursor.fetchone():  # todo: check if this condition works
             return True
         return False
 
 
-def insert_new_user_to_db(new_username, new_password, new_email, internet_package_type):
+def insert_new_user_to_db(new_username, new_password, new_email, internet_package_type, user_salt):
     with conn.cursor(as_dict=True) as cursor:
-        cursor.execute("INSERT INTO users (username, password, email, package_id) VALUES (%s, %s, %s, %s)",
-                       (new_username, new_password, new_email, internet_package_type))
+        cursor.execute("INSERT INTO users (username, password, email, package_id,salt) VALUES (%s, %s, %s, %s, %s)",
+                       (new_username, new_password, new_email, internet_package_type, user_salt))
 
 
 def insert_user_sectors_selected_to_db(publish_sectors, user_id):
     with conn.cursor(as_dict=True) as cursor:
         for sector in publish_sectors:
-            cursor.execute("SELECT sector_id FROM sectors WHERE sector_name = %s", (sector))
+            cursor.execute("SELECT sector_id FROM sectors WHERE sector_name = %s", (sector,))
             sector_id = cursor.fetchone()['sector_id']
             cursor.execute("INSERT INTO user_sectors (user_id, sector_id) VALUES (%s, %s)",
                            (user_id, sector_id))
@@ -53,7 +60,7 @@ def insert_user_sectors_selected_to_db(publish_sectors, user_id):
 
 
 def validate_password(password):
-    password_policy = get_password_policy()
+    password_policy, _ = get_password_policy()
     with open(os.path.abspath('passwords.txt'), 'r') as common_passwords_file:
         for common_pwd in common_passwords_file:
             if password == common_pwd.strip():
@@ -77,9 +84,35 @@ def validate_password(password):
     else:
         return True
 
+def create_password_reset_table():
+    with conn.cursor(as_dict=True) as cursor:
+        cursor.execute('''CREATE TABLE IF NOT EXISTS PasswordReset (
+                          user_id INT PRIMARY KEY,
+                          email NVARCHAR(100) UNIQUE,
+                          hash_code VARBINARY(100) UNIQUE
+                          )''')
+        conn.commit()
+
+
+def insert_password_reset(email, hash_code):
+    with conn.cursor(as_dict=True) as cursor:
+        cursor.execute('''SELECT email FROM PasswordReset WHERE email = %s''', (email,))
+        existing_email = cursor.fetchone()
+
+        if existing_email:
+            cursor.execute('''UPDATE PasswordReset SET hash_code = %s WHERE email = %s''', (hash_code, email))
+        else:
+            cursor.execute('''INSERT INTO PasswordReset (email, hash_code) VALUES (%s, %s)''', (email, hash_code))
+        conn.commit()
+
 
 def send_email(mail, recipient, hash_code):
     msg = Message('Confirm Password Change', sender='compsec2024@gmail.com', recipients=[recipient])
     msg.body = "Hello,\nWe've received a request to reset your password. If you want to reset your password, " \
                "click the link below and enter your new password\n http://localhost:5000/" + hash_code
     mail.send(msg)
+
+def change_user_password(email, new_password):
+    with conn.cursor(as_dict=True) as cursor:
+        cursor.execute('''UPDATE users SET password = %s WHERE email = %s''', (new_password, email))
+        conn.commit()

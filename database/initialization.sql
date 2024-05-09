@@ -19,10 +19,11 @@ GO
 CREATE TABLE users (
     user_id INT IDENTITY(1,1) PRIMARY KEY,
     username VARCHAR(50),
-    password VARCHAR(50),
+    password VARCHAR(200),
     email VARCHAR(100),
     package_id INT,
-    FOREIGN KEY (package_id) REFERENCES internet_packages(package_id)
+    FOREIGN KEY (package_id) REFERENCES internet_packages(package_id),
+    salt VARCHAR(64), -- Store the salt as a VARCHAR with sufficient length
 );
 GO
 
@@ -35,6 +36,11 @@ CREATE TABLE user_sectors (
 );
 GO
 
+CREATE TABLE PasswordReset (
+    email VARCHAR(100) PRIMARY KEY,
+    hash_code VARCHAR(200) -- Adjust the size according to your hashing algorithm
+);
+GO
 INSERT INTO sectors (sector_name)
 VALUES
 ('Technology'),
@@ -65,3 +71,4 @@ VALUES
 ('Standard'),
 ('Premium');
 GO
+
