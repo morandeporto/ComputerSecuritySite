@@ -62,7 +62,7 @@ def validate_password(password):
     if len(password_policy.test(password)) > 0:
         flash('The Password does not meet the minimum requirements ', 'error')
         for missing_requirement in password_policy.test(password):
-            match missing_requirement:
+            match str(missing_requirement):
                 case 'Length(10)':
                     flash('Please enter a password with at least 10 characters', 'error')
                 case 'Uppercase(2)':
