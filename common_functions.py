@@ -36,16 +36,16 @@ def insert_new_client(client_data):
 
 def get_user_sectors(user_id):
     with conn.cursor(as_dict=True) as cursor:
-        cursor.execute("SELECT sector_name FROM sectors JOIN user_sectors ON sectors.sector_id = user_sectors.sector_id WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT sector_name, sectors.sector_id FROM sectors JOIN user_sectors ON sectors.sector_id = user_sectors.sector_id WHERE user_id = %s", (user_id,))
         sectors = cursor.fetchall()
-        sectors = [sector['sector_name'] for sector in sectors]
+        sectors = [(sector['sector_name'], sector['sector_id']) for sector in sectors]
     return sectors
 
 def get_client_data(client_id):
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute("SELECT * FROM clients WHERE client_id = %s", (client_id,))
         return cursor.fetchone()
-    
+
 def check_if_user_exists_using_email(email: str) -> bool:
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute("SELECT * FROM users WHERE email = %s ", (email,))
@@ -70,7 +70,7 @@ def insert_user_sectors_selected_to_db(publish_sectors, user_id):
     conn.commit()
 
 
-def validate_password(password):
+def validate_password(password) ->bool:
     password_policy, _ = get_password_policy()
     with open(os.path.abspath('passwords.txt'), 'r') as common_passwords_file:
         for common_pwd in common_passwords_file:
@@ -98,20 +98,14 @@ def validate_password(password):
 
 def insert_password_reset(email, hash_code):
     with conn.cursor(as_dict=True) as cursor:
-        cursor.execute('''SELECT email FROM PasswordReset WHERE email = %s''', (email,))
-        existing_email = cursor.fetchone()
-
-        if existing_email:
-            cursor.execute('''UPDATE PasswordReset SET hash_code = %s WHERE email = %s''', (hash_code, email))
-        else:
-            cursor.execute('''INSERT INTO PasswordReset (email, hash_code) VALUES (%s, %s)''', (email, hash_code))
+        cursor.execute('''UPDATE users SET reset_token = %s WHERE email = %s''', (hash_code, email))
         conn.commit()
 
 
 def send_email(mail, recipient, hash_code):
     msg = Message('Confirm Password Change', sender='compsec2024@gmail.com', recipients=[recipient])
     msg.body = "Hello,\nWe've received a request to reset your password. If you want to reset your password, " \
-               "click the link below and enter your new password\n http://localhost:5000/" + hash_code
+               "click the link below and enter your new password\n http://localhost:5000/password_change/" + hash_code
     mail.send(msg)
 
 def change_user_password(email, new_password):

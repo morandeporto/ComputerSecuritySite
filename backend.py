@@ -54,6 +54,8 @@ def register():
     if request.method == 'POST':
         new_username = request.form.get('username')
         new_password = request.form.get('password')
+        if not validate_password(new_password):
+            return redirect(url_for('register'))
         new_email = request.form.get('email')
         publish_sectors = request.form.getlist('publish_sectors[]')
 
@@ -104,43 +106,47 @@ def add_new_client():
     return render_template('add_new_client.html', sectors=sectors)
 
 
-@app.route('/set_new_pwd')
+@app.route('/set_new_pwd', methods=['GET', 'POST'])
 def set_new_pwd():
     if request.method == "POST":
-        user_data = request.args.get('user_data')
-        flash(f'user_data= {user_data}', 'info')
+        user_data = session.get('user_data')
         if user_data:
-            flash(f'user_data= {user_data}', 'info')
-            user_data = json.loads(user_data)
             user_salt = bytes.fromhex(user_data["salt"])
             user_email = user_data["email"]
             new_password = request.form.get('new_pwd')
+            if not validate_password(new_password):
+                return redirect(url_for('set_new_pwd', _method='GET'))
             new_password_hashed = hashlib.pbkdf2_hmac('sha256', new_password.encode('utf-8'), user_salt,
                                                    100000)  # save in bytes
             change_user_password(user_email, new_password_hashed.hex())
             return render_template('login.html', password_changed=True)
+        else:
+            flash("No user data!")
+            return render_template('set_new_pwd.html')
+
     # todo: Need to change the user password
     return render_template('set_new_pwd.html')
 
 
-"""@app.route("/<string:token>", methods=["GET", "POST"])
+@app.route("/password_change/<string:token>", methods=["GET", "POST"])
 def password_change(token):
     if request.method == "GET":
         try:
             with conn.cursor(as_dict=True) as cursor:
                 hashed_token = hashlib.sha1(token.encode('utf-8')).digest().hex()
                 flash(f'hashed_token= {hashed_token}', 'info')
-                cursor.execute('''SELECT * FROM PasswordReset WHERE hash_code = %s''', (hashed_token,))
-                got_data = cursor.fetchone()
-                flash('Get method', 'success')
-                return render_template('set_new_pwd.html', user_data=got_data)
+                cursor.execute('''SELECT * FROM users WHERE reset_token = %s''', (hashed_token,))
+                user_data = cursor.fetchone()
+                session['user_data'] = user_data
+                print("GOING to set_new_pws")
+                return redirect(url_for('set_new_pwd'))
         except:
             flash('The code was not valid', 'error')
             return render_template('password_reset.html')
 
     else:
         flash('The code was not valid', 'error')
-        return render_template('password_reset.html')"""
+        return render_template('password_reset.html')
 
 
 @app.route('/password_reset', methods=['GET', 'POST'])
@@ -149,10 +155,10 @@ def password_reset():
         user_email = request.form["email"]
         if check_if_user_exists_using_email(email=user_email):
             random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-            hash_code = hashlib.sha1(random_string.encode('utf-8')).digest()
+            hash_code = hashlib.sha1(random_string.encode('utf-8')).digest().hex()
 
             # Insert password reset info into the database
-            insert_password_reset(user_email, hash_code.hex())
+            insert_password_reset(user_email, hash_code)
             # Send email with the random string (randomly generated token)
             send_email(mail=mail, recipient=user_email, hash_code=random_string)
 

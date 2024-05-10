@@ -12,7 +12,7 @@
             padding: 0;
         }
         .container {
-            max-width: 800px;
+            max-width: 1100px;
             margin: 50px auto;
             padding: 20px;
             background-color: #fff;
@@ -48,19 +48,55 @@
         form, a {
             margin-top: 20px;
         }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #4caf50;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
 
     </style>
 </head>
 <body>
 <div class="container">
-    {% if clientname %}
+    {% if client_data %}
     <div class="success-message">
-        <h2>Client: {{ clientname }} added successfully!</h2>
+        <h3>Client: {{ client_data['first_name'] }} {{ client_data['last_name'] }} added successfully client data:</h3>
+        <table>
+            <thead>
+            <tr>
+                {% for field in client_data.keys() %}
+                <th>{{ field }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                {% for value in client_data.values() %}
+                <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+
     </div>
     {% endif %}
 
     <h1>Welcome, {{ username }}!</h1>
-    <p>Here are your publish Sectors: {{ publish_sectors }}</p>
 
 
     <a href="{{ url_for('logout') }}">
