@@ -2,7 +2,7 @@ import hashlib
 import json
 import string
 
-from flask import Flask, render_template, request, redirect, url_for, make_response
+from flask import Flask, render_template, request, redirect, url_for, make_response, session
 from common_functions import *
 from app_configuration import app_configuration
 from flask_mail import Mail
@@ -12,86 +12,96 @@ app = Flask(__name__)
 app = app_configuration(app)
 mail = Mail(app)
 
+@app.route('/')
+def index():
+    if 'username' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        user_data = get_user_by_username(username)
-        if user_data:
-            user_hashed_password = bytes.fromhex(user_data['password'])
-            salt_bytes = bytes.fromhex(user_data['salt'])
-            login_hashed_pwd = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt_bytes, 100000)
-            if user_hashed_password == login_hashed_pwd:
-                username = username.upper()
-                internet_package_type = user_data["package_id"]
-                response = make_response(
-                    render_template('dashboard.html', username=username, internet_package_type=internet_package_type))
-                response.set_cookie('username', username)
-                response.set_cookie('internet_package_type', str(internet_package_type))
-                return response
-            else:
-                flash('Invalid username or password')
-                return redirect(url_for('login'))
+
+        user_data = get_user_data_from_db(username=username)
+        if user_data is None:
+            flash('User does not exist')
+            return redirect(url_for('login'))
+
+        salt_bytes = bytes.fromhex(user_data['salt'])
+        login_hashed_pwd = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt_bytes, 100000)
+        user_hashed_password = bytes.fromhex(user_data['password'])
+
+        if user_hashed_password == login_hashed_pwd:
+            session['username'] = username
+            session['user_id'] = user_data['user_id']
+            return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password')
             return redirect(url_for('login'))
 
-    return render_template('login.html')
+    return render_template('login.html', user_added=request.args.get('user_added'))
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     _, salt_len = get_password_policy()
-    sectors = get_all_sectors_names_from_db()
     if request.method == 'POST':
-        # Handle registration logic here
         new_username = request.form.get('username')
         new_password = request.form.get('password')
         new_email = request.form.get('email')
-        internet_package_type = request.form.get('internet_package_type')
-        publish_sectors = request.form.getlist('publish_sectors')
+        publish_sectors = request.form.getlist('publish_sectors[]')
+
         user_data = get_user_data_from_db(username=new_username)
         if user_data:
             flash('Username already exists')
             return redirect(url_for('register'))
-        else:
-            user_salt = os.urandom(salt_len)
-            new_password_hashed = hashlib.pbkdf2_hmac('sha256', new_password.encode('utf-8'), user_salt,
-                                                      100000)  # save in bytes
-            insert_new_user_to_db(new_username, new_password_hashed.hex(), new_email, internet_package_type,
-                                  user_salt.hex())
-            user_id = get_user_data_from_db(username=new_username)['user_id']
-            insert_user_sectors_selected_to_db(publish_sectors, user_id)
-            return render_template('login.html', user_added="user added")
 
+        user_salt = os.urandom(salt_len)
+        new_password_hashed = hashlib.pbkdf2_hmac('sha256', new_password.encode('utf-8'), user_salt,
+                                                    100000)  # save in bytes
+        insert_new_user_to_db(new_username, new_password_hashed.hex(), new_email, user_salt.hex())
+        user_id = get_user_data_from_db(username=new_username)['user_id']
+        insert_user_sectors_selected_to_db(publish_sectors, user_id)
+        session['username'] = new_username
+        session['user_id'] = user_id
+        return redirect(url_for('login', user_added="user added"))
+    
+    sectors = get_all_sectors_names_from_db()
     return render_template('register.html', sectors=sectors)
 
 
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard')
 def dashboard():
-    username = request.cookies.get('username')
-    internet_package_type = request.cookies.get('internet_package_type')
-    # Render the dashboard.html template
-    if request.method == 'POST':
-        return redirect(url_for('add_new_client'))
-    clientname = request.args.get('clientname')
-    if clientname:  # if new client added
-        clientname = request.args.get('clientname')
-        return render_template('dashboard.html', username=username, clientname=clientname,
-                               internet_package_type=internet_package_type)
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    username = session['username']
+    clientid = request.args.get('clientid')
+    if clientid:  # if new client added
+        client_data = get_client_data(clientid)
+        return render_template('dashboard.html', username=username, client_data=client_data)
     return render_template('dashboard.html', username=username)
 
 
 @app.route('/add_new_client', methods=['GET', 'POST'])
 def add_new_client():
-    username = request.cookies.get('username')
-    internet_package_type = request.cookies.get('internet_package_type')
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
-        return render_template('dashboard.html', username=username, internet_package_type=internet_package_type)
+        fields = ['sector_id', 'package_id', 'ssn', 'first_name', 'last_name', 'email', 'phone_number']
+        client_data = {field: request.form.get(field) for field in fields}
+        client_data['representative_id'] = session['user_id']
+        client_id = insert_new_client(client_data)
+        return redirect(url_for('dashboard', clientid=client_id))
 
-    return render_template('add_new_client.html')
+    sectors = get_user_sectors(session['user_id'])
+    return render_template('add_new_client.html', sectors=sectors)
 
 
 @app.route('/set_new_pwd')
@@ -113,7 +123,7 @@ def set_new_pwd():
     return render_template('set_new_pwd.html')
 
 
-@app.route("/<string:token>", methods=["GET", "POST"])
+"""@app.route("/<string:token>", methods=["GET", "POST"])
 def password_change(token):
     if request.method == "GET":
         try:
@@ -130,7 +140,7 @@ def password_change(token):
 
     else:
         flash('The code was not valid', 'error')
-        return render_template('password_reset.html')
+        return render_template('password_reset.html')"""
 
 
 @app.route('/password_reset', methods=['GET', 'POST'])

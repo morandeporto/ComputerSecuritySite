@@ -45,7 +45,7 @@
         button:hover {
             background-color: #45a049;
         }
-        form {
+        form, a {
             margin-top: 20px;
         }
 
@@ -60,16 +60,16 @@
     {% endif %}
 
     <h1>Welcome, {{ username }}!</h1>
-    <p>Internet Package Type: {{ internet_package_type }}</p>
-    <p>Publish Sectors: {{ publish_sectors }}</p>
+    <p>Here are your publish Sectors: {{ publish_sectors }}</p>
 
-    <!-- Logout Form -->
-    <form method="GET" action="{{ url_for('login') }}">
+
+    <a href="{{ url_for('logout') }}">
         <button type="submit">Logout</button>
-    </form>
-    <form method="GET" action="{{ url_for('add_new_client') }}">
+    </a>
+
+    <a href="{{ url_for('add_new_client') }}">
         <button type="submit">Add New Client</button>
-    </form>
+    </a>
 </div>
 </body>
 </html>

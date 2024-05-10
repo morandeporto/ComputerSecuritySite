@@ -21,9 +21,24 @@ CREATE TABLE users (
     username VARCHAR(50),
     password VARCHAR(200),
     email VARCHAR(100),
+    salt VARCHAR(64),
+    reset_token VARCHAR(200)
+);
+GO
+
+CREATE TABLE clients (
+    client_id INT IDENTITY(1,1) PRIMARY KEY,
+    representative_id INT,
+    sector_id INT,
     package_id INT,
-    FOREIGN KEY (package_id) REFERENCES internet_packages(package_id),
-    salt VARCHAR(64), -- Store the salt as a VARCHAR with sufficient length
+    ssn VARCHAR(11),
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    email VARCHAR(100),
+    phone_number VARCHAR(20),
+    FOREIGN KEY (representative_id) REFERENCES users(user_id),
+    FOREIGN KEY (sector_id) REFERENCES sectors(sector_id),
+    FOREIGN KEY (package_id) REFERENCES internet_packages(package_id)
 );
 GO
 
@@ -36,11 +51,6 @@ CREATE TABLE user_sectors (
 );
 GO
 
-CREATE TABLE PasswordReset (
-    email VARCHAR(100) PRIMARY KEY,
-    hash_code VARCHAR(200) -- Adjust the size according to your hashing algorithm
-);
-GO
 INSERT INTO sectors (sector_name)
 VALUES
 ('Technology'),

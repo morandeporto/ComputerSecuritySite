@@ -19,7 +19,6 @@ def get_user_data_from_db(username=None, password=None):
             cursor.execute(f"SELECT * FROM users WHERE username = %s", (username,))
         return cursor.fetchone()
 
-
 def get_all_sectors_names_from_db():
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute("SELECT sector_name FROM sectors")
@@ -27,14 +26,26 @@ def get_all_sectors_names_from_db():
         sectors = [sector['sector_name'] for sector in sectors]
     return sectors
 
-
-def get_user_by_username(username):
+def insert_new_client(client_data):
     with conn.cursor(as_dict=True) as cursor:
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-        user = cursor.fetchone()
-    return user
+        cursor.execute("INSERT INTO clients (representative_id, sector_id, package_id, ssn, first_name, last_name, email, phone_number) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                       (client_data['representative_id'], client_data['sector_id'], client_data['package_id'], client_data['ssn'], client_data['first_name'], client_data['last_name'], client_data['email'], client_data['phone_number']))
+        client_id = cursor.lastrowid
+    conn.commit()
+    return client_id
 
+def get_user_sectors(user_id):
+    with conn.cursor(as_dict=True) as cursor:
+        cursor.execute("SELECT sector_name FROM sectors JOIN user_sectors ON sectors.sector_id = user_sectors.sector_id WHERE user_id = %s", (user_id,))
+        sectors = cursor.fetchall()
+        sectors = [sector['sector_name'] for sector in sectors]
+    return sectors
 
+def get_client_data(client_id):
+    with conn.cursor(as_dict=True) as cursor:
+        cursor.execute("SELECT * FROM clients WHERE client_id = %s", (client_id,))
+        return cursor.fetchone()
+    
 def check_if_user_exists_using_email(email: str) -> bool:
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute("SELECT * FROM users WHERE email = %s ", (email,))
@@ -43,10 +54,10 @@ def check_if_user_exists_using_email(email: str) -> bool:
         return False
 
 
-def insert_new_user_to_db(new_username, new_password, new_email, internet_package_type, user_salt):
+def insert_new_user_to_db(new_username, new_password, new_email, user_salt):
     with conn.cursor(as_dict=True) as cursor:
-        cursor.execute("INSERT INTO users (username, password, email, package_id,salt) VALUES (%s, %s, %s, %s, %s)",
-                       (new_username, new_password, new_email, internet_package_type, user_salt))
+        cursor.execute("INSERT INTO users (username, password, email, salt) VALUES (%s, %s, %s, %s)",
+                       (new_username, new_password, new_email, user_salt))
 
 
 def insert_user_sectors_selected_to_db(publish_sectors, user_id):
@@ -83,15 +94,6 @@ def validate_password(password):
         return False
     else:
         return True
-
-def create_password_reset_table():
-    with conn.cursor(as_dict=True) as cursor:
-        cursor.execute('''CREATE TABLE IF NOT EXISTS PasswordReset (
-                          user_id INT PRIMARY KEY,
-                          email NVARCHAR(100) UNIQUE,
-                          hash_code VARBINARY(100) UNIQUE
-                          )''')
-        conn.commit()
 
 
 def insert_password_reset(email, hash_code):
