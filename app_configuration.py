@@ -7,6 +7,7 @@ from password_strength import PasswordPolicy
 
 SALT_LENGTH = 32
 
+
 def app_configuration(app: Flask):
     load_dotenv()
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -24,9 +25,12 @@ def get_password_policy():
     password_config = json.load(file)
     policy = PasswordPolicy.from_names(
         length=password_config["password_len"],  # min length: 10
-        uppercase=password_config["uppercase"],  # need min. 1 uppercase letters
+        # need min. 1 uppercase letters
+        uppercase=password_config["uppercase"],
         numbers=password_config["numbers"],  # need min. 1 digits
-        special=password_config["special_char"],  # need min. 1 special characters
-        nonletters=password_config["nonletters"]  # need min. 1 non-letter characters (digits, specials, anything)
+        # need min. 1 special characters
+        special=password_config["special_char"],
+        # need min. 1 non-letter characters (digits, specials, anything)
+        nonletters=password_config["nonletters"]
     )
     return policy, password_config["salt_len"]

@@ -11,10 +11,6 @@
 ```bash
 docker ps
 ```
-2. Python 3 is installed
-```bash
-python --version
-```
 
 ### Setup / Run
 > The setup of the program or re-running can be done automatically with the same command,`docker-compose up`.

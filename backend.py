@@ -12,11 +12,13 @@ app = Flask(__name__)
 app = app_configuration(app)
 mail = Mail(app)
 
+
 @app.route('/')
 def index():
     if 'username' in session:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -30,7 +32,8 @@ def login():
             return redirect(url_for('login'))
 
         salt_bytes = bytes.fromhex(user_data['salt'])
-        login_hashed_pwd = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt_bytes, 100000)
+        login_hashed_pwd = hashlib.pbkdf2_hmac(
+            'sha256', password.encode('utf-8'), salt_bytes, 100000)
         user_hashed_password = bytes.fromhex(user_data['password'])
 
         if user_hashed_password == login_hashed_pwd:
@@ -41,12 +44,16 @@ def login():
             flash('Invalid username or password')
             return redirect(url_for('login'))
 
-    return render_template('login.html', user_added=request.args.get('user_added'))
+    return render_template(
+        'login.html',
+        user_added=request.args.get('user_added'))
+
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -65,15 +72,20 @@ def register():
             return redirect(url_for('register'))
 
         user_salt = os.urandom(salt_len)
-        new_password_hashed = hashlib.pbkdf2_hmac('sha256', new_password.encode('utf-8'), user_salt,
-                                                    100000)  # save in bytes
-        insert_new_user_to_db(new_username, new_password_hashed.hex(), new_email, user_salt.hex())
+        new_password_hashed = hashlib.pbkdf2_hmac(
+            'sha256', new_password.encode('utf-8'),
+            user_salt, 100000)  # save in bytes
+        insert_new_user_to_db(
+            new_username,
+            new_password_hashed.hex(),
+            new_email,
+            user_salt.hex())
         user_id = get_user_data_from_db(username=new_username)['user_id']
         insert_user_sectors_selected_to_db(publish_sectors, user_id)
         session['username'] = new_username
         session['user_id'] = user_id
         return redirect(url_for('login', user_added="user added"))
-    
+
     sectors = get_all_sectors_names_from_db()
     return render_template('register.html', sectors=sectors)
 
@@ -86,7 +98,10 @@ def dashboard():
     clientid = request.args.get('clientid')
     if clientid:  # if new client added
         client_data = get_client_data(clientid)
-        return render_template('dashboard.html', username=username, client_data=client_data)
+        return render_template(
+            'dashboard.html',
+            username=username,
+            client_data=client_data)
     return render_template('dashboard.html', username=username)
 
 
@@ -94,9 +109,16 @@ def dashboard():
 def add_new_client():
     if 'username' not in session:
         return redirect(url_for('login'))
-    
+
     if request.method == 'POST':
-        fields = ['sector_id', 'package_id', 'ssn', 'first_name', 'last_name', 'email', 'phone_number']
+        fields = [
+            'sector_id',
+            'package_id',
+            'ssn',
+            'first_name',
+            'last_name',
+            'email',
+            'phone_number']
         client_data = {field: request.form.get(field) for field in fields}
         client_data['representative_id'] = session['user_id']
         client_id = insert_new_client(client_data)
@@ -116,8 +138,9 @@ def set_new_pwd():
             new_password = request.form.get('new_pwd')
             if not validate_password(new_password):
                 return redirect(url_for('set_new_pwd', _method='GET'))
-            new_password_hashed = hashlib.pbkdf2_hmac('sha256', new_password.encode('utf-8'), user_salt,
-                                                   100000)  # save in bytes
+            new_password_hashed = hashlib.pbkdf2_hmac(
+                'sha256', new_password.encode('utf-8'),
+                user_salt, 100000)  # save in bytes
             change_user_password(user_email, new_password_hashed.hex())
             return render_template('login.html', password_changed=True)
         else:
@@ -133,14 +156,17 @@ def password_change(token):
     if request.method == "GET":
         try:
             with conn.cursor(as_dict=True) as cursor:
-                hashed_token = hashlib.sha1(token.encode('utf-8')).digest().hex()
+                hashed_token = hashlib.sha1(
+                    token.encode('utf-8')).digest().hex()
                 flash(f'hashed_token= {hashed_token}', 'info')
-                cursor.execute('''SELECT * FROM users WHERE reset_token = %s''', (hashed_token,))
+                cursor.execute(
+                    '''SELECT * FROM users WHERE reset_token = %s''',
+                    (hashed_token,))
                 user_data = cursor.fetchone()
                 session['user_data'] = user_data
                 print("GOING to set_new_pws")
                 return redirect(url_for('set_new_pwd'))
-        except:
+        except BaseException:
             flash('The code was not valid', 'error')
             return render_template('password_reset.html')
 
@@ -154,13 +180,21 @@ def password_reset():
     if request.method == 'POST':
         user_email = request.form["email"]
         if check_if_user_exists_using_email(email=user_email):
-            random_string = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-            hash_code = hashlib.sha1(random_string.encode('utf-8')).digest().hex()
+            random_string = ''.join(
+                random.choices(
+                    string.ascii_uppercase +
+                    string.digits,
+                    k=20))
+            hash_code = hashlib.sha1(
+                random_string.encode('utf-8')).digest().hex()
 
             # Insert password reset info into the database
             insert_password_reset(user_email, hash_code)
             # Send email with the random string (randomly generated token)
-            send_email(mail=mail, recipient=user_email, hash_code=random_string)
+            send_email(
+                mail=mail,
+                recipient=user_email,
+                hash_code=random_string)
 
             flash('An email was sent check your mail inbox', 'info')
             return redirect(url_for('password_reset'))
