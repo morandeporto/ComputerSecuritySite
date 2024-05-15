@@ -1,5 +1,6 @@
 import pymssql
 import os
+import time
 from dotenv import load_dotenv
 from flask import flash
 from app_configuration import get_password_policy
@@ -8,7 +9,12 @@ from flask_mail import Message
 load_dotenv()
 password = os.getenv('MSSQL_SA_PASSWORD')
 
-conn = pymssql.connect("172.17.0.1", "sa", password, "CommunicationLTD")
+while True:
+    try:
+        conn = pymssql.connect("172.17.0.1", "sa", password, "CommunicationLTD")
+        break
+    except pymssql.OperationalError:
+        time.sleep(1)
 
 
 def get_user_data_from_db(username=None, password=None):

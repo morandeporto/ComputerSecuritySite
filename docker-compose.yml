@@ -15,4 +15,4 @@ services:
     depends_on:
       - database
     user: root
-    command: /bin/bash -c "sleep 30 && python backend.py"
+    command: /bin/bash -c "python backend.py"
