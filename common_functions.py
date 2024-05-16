@@ -6,12 +6,17 @@ from flask import flash
 from app_configuration import *
 from flask_mail import Message
 import hashlib
+
 load_dotenv()
 password = os.getenv('MSSQL_SA_PASSWORD')
 
 while True:
     try:
-        conn = pymssql.connect("172.17.0.1", "sa", password, "CommunicationLTD")
+        conn = pymssql.connect(
+            "172.17.0.1",
+            "sa",
+            password,
+            "CommunicationLTD")
         break
     except pymssql.OperationalError:
         time.sleep(1)
@@ -129,7 +134,9 @@ def validate_password(password) -> bool:
         for missing_requirement in password_policy.test(password):
             splitted = str(missing_requirement).split("(")
             number = splitted[1].replace(")", "")
-            flash("Please enter a password with at least " + number + " " + rules_messages[splitted[0]])
+            flash(
+                "Please enter a password with at least " + number + " " +
+                rules_messages[splitted[0]])
         return False
     else:
         return True
@@ -156,7 +163,8 @@ def send_email(mail, recipient, hash_code):
 def change_user_password_in_db(email, new_password) -> bool:
     # Check if the new password matches any of the previous passwords
     if check_previous_passwords(email, new_password):
-        flash("Please enter a new password that is not the same as your previous passwords.")
+        flash(
+            "Please enter a new password that is not the same as your previous passwords.")
         return False
     _, salt_len = get_password_policy()
     user_salt = os.urandom(salt_len)
@@ -168,7 +176,11 @@ def change_user_password_in_db(email, new_password) -> bool:
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
             '''UPDATE users SET password = %s WHERE email = %s''',
-            (new_password_hashed, email))
+            (new_password_hashed.hex(), email))
+        cursor.execute('''UPDATE user_info SET salt = %s WHERE user_id = (SELECT user_id FROM users WHERE email = %s)''',
+                       (user_salt.hex(), email))
+        cursor.execute('''INSERT INTO password_history (user_id,password,salt) VALUES ((SELECT user_id FROM users WHERE email = %s), %s, %s)''',
+                       (email, new_password_hashed.hex(), user_salt.hex()))
         conn.commit()
     return True
 
@@ -181,26 +193,21 @@ def check_previous_passwords(email, user_new_password):
             (email,))
         user_id = cursor.fetchone()['user_id']
         # Retrieve the previous three passwords for the user
-        cursor.execute('''SELECT TOP 3 * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY history_id DESC) AS rn
+        cursor.execute(
+            '''SELECT TOP 3 * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY history_id DESC) AS rn
         FROM password_history WHERE user_id = %s) AS recent_passwords ORDER BY rn;''',
-                       (user_id,))
-        previous_passwords_data = [(row['password'], row['salt']) for row in cursor.fetchall()]
+            (user_id,))
+        previous_passwords_data = [(row['password'], row['salt'])
+                                   for row in cursor.fetchall()]
         return compare_passwords(user_new_password, previous_passwords_data)
 
 
 def compare_passwords(user_new_password, previous_passwords_data) -> bool:
-    flash(f"user_new_password: {user_new_password}")
-    flash(f"previous_passwords_data: {previous_passwords_data}")
     for previous_password, previous_salt in previous_passwords_data:
-        flash(f"previous_password: {previous_password}")
-        flash(f"previous_salt: {previous_salt}")
-
         previous_salt_bytes = bytes.fromhex(previous_salt)
         user_salted_password = hashlib.pbkdf2_hmac(
-            'sha256', user_new_password.encode('utf-8'), previous_salt_bytes, 100000)
-        flash(f"user_salted_password: {user_salted_password}")
-        flash(f"previous_password bytes: {bytes.fromhex(previous_password)}")
-
+            'sha256', user_new_password.encode('utf-8'),
+            previous_salt_bytes, 100000)
         if user_salted_password == bytes.fromhex(previous_password):
             return True
     return False

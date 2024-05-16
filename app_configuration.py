@@ -35,7 +35,7 @@ def get_password_policy():
     )
     return policy, password_config["salt_len"]
 
+
 def get_config_rules_messages():
     file = open("password_config.json")
     return json.load(file)["rules_messages"]
-

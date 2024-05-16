@@ -203,7 +203,6 @@ def password_reset():
         return render_template('password_reset.html')
 
 
-
 @app.route('/change_password', methods=['GET', 'POST'])
 def change_user_password():
     if request.method == 'POST':
@@ -214,11 +213,11 @@ def change_user_password():
             change_user_password(email, new_password)
             return "Password changed successfully!"
         except ValueError as e:
-            return str(e)  # Return error message to user if the new password matches previous passwords
+            # Return error message to user if the new password matches previous
+            # passwords
+            return str(e)
     else:
         return render_template('change_password.html')
-    
-
 
 
 if __name__ == '__main__':
