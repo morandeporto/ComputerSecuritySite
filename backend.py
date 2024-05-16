@@ -7,6 +7,7 @@ from common_functions import *
 from app_configuration import app_configuration
 from flask_mail import Mail
 import random
+from flask import request, render_template
 
 app = Flask(__name__)
 app = app_configuration(app)
@@ -31,7 +32,7 @@ def login():
             flash('User does not exist')
             return redirect(url_for('login'))
 
-        salt_bytes = bytes.fromhex(user_data['salt'])
+        salt_bytes = bytes.fromhex(user_salt(user_id=user_data['user_id']))
         login_hashed_pwd = hashlib.pbkdf2_hmac(
             'sha256', password.encode('utf-8'), salt_bytes, 100000)
         user_hashed_password = bytes.fromhex(user_data['password'])
@@ -205,9 +206,22 @@ def password_reset():
         return render_template('password_reset.html')
 
 
+
 @app.route('/change_password', methods=['GET', 'POST'])
-def change_password():
-    return render_template('change_password.html')
+def change_user_password():
+    if request.method == 'POST':
+        email = request.form['email']
+        new_password = request.form['new_password']
+
+        try:
+            change_user_password(email, new_password)
+            return "Password changed successfully!"
+        except ValueError as e:
+            return str(e)  # Return error message to user if the new password matches previous passwords
+    else:
+        return render_template('change_password.html')
+    
+
 
 
 if __name__ == '__main__':

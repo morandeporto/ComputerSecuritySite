@@ -21,7 +21,6 @@ CREATE TABLE users (
     username VARCHAR(50),
     password VARCHAR(200),
     email VARCHAR(100),
-    salt VARCHAR(64),
     reset_token VARCHAR(200)
 );
 GO
@@ -48,6 +47,24 @@ CREATE TABLE user_sectors (
     PRIMARY KEY (user_id, sector_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (sector_id) REFERENCES sectors(sector_id)
+);
+GO
+
+CREATE TABLE password_history (
+    history_id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT,
+    password VARCHAR(200),
+    change_date DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+GO
+
+
+CREATE TABLE user_info (
+    user_id INT PRIMARY KEY,
+    salt VARCHAR(64),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    
 );
 GO
 
