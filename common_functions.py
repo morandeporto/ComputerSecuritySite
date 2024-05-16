@@ -3,9 +3,9 @@ import os
 import time
 from dotenv import load_dotenv
 from flask import flash
-from app_configuration import get_password_policy
+from app_configuration import *
 from flask_mail import Message
-
+import hashlib
 load_dotenv()
 password = os.getenv('MSSQL_SA_PASSWORD')
 
@@ -72,12 +72,12 @@ def get_client_data(client_id):
         cursor.execute(
             "SELECT * FROM clients WHERE client_id = %s", (client_id,))
         return cursor.fetchone()
-    
+
 
 def get_user_salt(user_id):
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
-        "SELECT * FROM user_info WHERE user_id = %s", (user_id,))
+            "SELECT * FROM user_info WHERE user_id = %s", (user_id,))
         return cursor.fetchone()['salt']
 
 
@@ -89,19 +89,19 @@ def check_if_user_exists_using_email(email: str) -> bool:
         return False
 
 
-def insert_new_user_to_db(new_username, new_password, new_email,salt):
+def insert_new_user_to_db(new_username, new_password, new_email, salt):
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
             "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
             (new_username, new_password, new_email))
-        user_id=cursor.lastrowid
+        user_id = cursor.lastrowid
         cursor.execute(
-        "INSERT INTO user_info (user_id,salt) VALUES (%s, %s)",
-          (user_id, salt))
+            "INSERT INTO user_info (user_id,salt) VALUES (%s, %s)",
+            (user_id, salt))
         cursor.execute(
-        "INSERT INTO password_history(user_id,password) VALUES (%s, %s)",
-          (user_id, new_password))
-        
+            "INSERT INTO password_history (user_id,password,salt) VALUES (%s, %s, %s)",
+            (user_id, new_password, salt))
+
 
 def insert_user_sectors_selected_to_db(publish_sectors, user_id):
     with conn.cursor(as_dict=True) as cursor:
@@ -123,30 +123,13 @@ def validate_password(password) -> bool:
             if password == common_pwd.strip():
                 flash('Password is a known password.')
                 return False
+    rules_messages = get_config_rules_messages()
     if len(password_policy.test(password)) > 0:
         flash('The Password does not meet the minimum requirements ', 'error')
         for missing_requirement in password_policy.test(password):
-            match str(missing_requirement):
-                case 'Length(10)':
-                    flash(
-                        'Please enter a password with at least 10 characters',
-                        'error')
-                case 'Uppercase(2)':
-                    flash(
-                        'Please enter a password with at least 2 Uppercase Letters',
-                        'error')
-                case 'Numbers(1)':
-                    flash(
-                        'Please enter a password with at least 1 Number',
-                        'error')
-                case 'Special(1)':
-                    flash(
-                        'Please enter a password with at least 1 Special String',
-                        'error')
-                case 'NonLetters(1)':
-                    flash(
-                        'Please enter a password with at least 10 characters',
-                        'error')
+            splitted = str(missing_requirement).split("(")
+            number = splitted[1].replace(")", "")
+            flash("Please enter a password with at least " + number + " " + rules_messages[splitted[0]])
         return False
     else:
         return True
@@ -170,38 +153,54 @@ def send_email(mail, recipient, hash_code):
     mail.send(msg)
 
 
-
-
-def change_user_password1(email, new_password):
+def change_user_password_in_db(email, new_password) -> bool:
     # Check if the new password matches any of the previous passwords
-    previous_passwords = check_previous_passwords(email, new_password)
-
-    if previous_passwords is not None and new_password in previous_passwords:
-        raise ValueError("Please enter a new password that is not the same as your previous passwords.")
+    if check_previous_passwords(email, new_password):
+        flash("Please enter a new password that is not the same as your previous passwords.")
+        return False
+    _, salt_len = get_password_policy()
+    user_salt = os.urandom(salt_len)
+    new_password_hashed = hashlib.pbkdf2_hmac(
+        'sha256', new_password.encode('utf-8'),
+        user_salt, 100000)  # save in bytes
 
     # Update the user's password in the database
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
             '''UPDATE users SET password = %s WHERE email = %s''',
-            (new_password, email))
+            (new_password_hashed, email))
         conn.commit()
+    return True
 
-       
-def check_previous_passwords(email, new_password):
+
+def check_previous_passwords(email, user_new_password):
     with conn.cursor(as_dict=True) as cursor:
         # Get the user_id based on the email
         cursor.execute(
             '''SELECT user_id FROM users WHERE email = %s''',
             (email,))
         user_id = cursor.fetchone()['user_id']
+        # Retrieve the previous three passwords for the user
+        cursor.execute('''SELECT TOP 3 * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY history_id DESC) AS rn
+        FROM password_history WHERE user_id = %s) AS recent_passwords ORDER BY rn;''',
+                       (user_id,))
+        previous_passwords_data = [(row['password'], row['salt']) for row in cursor.fetchall()]
+        return compare_passwords(user_new_password, previous_passwords_data)
 
-        if user_id:
-            # Retrieve the previous three passwords for the user
-            cursor.execute ('''SELECT TOP 3 password FROM (SELECT password, ROW_NUMBER() OVER (ORDER BY history_id DESC) AS rn
-            FROM password_history WHERE user_id = %s) AS recent_passwords ORDER BY rn;''',
-                (user_id,))
-            previous_passwords = [row['password'] for row in cursor.fetchall()]
-            return previous_passwords
-        else:
-            return None 
-            
+
+def compare_passwords(user_new_password, previous_passwords_data) -> bool:
+    flash(f"user_new_password: {user_new_password}")
+    flash(f"previous_passwords_data: {previous_passwords_data}")
+    for previous_password, previous_salt in previous_passwords_data:
+        flash(f"previous_password: {previous_password}")
+        flash(f"previous_salt: {previous_salt}")
+
+        previous_salt_bytes = bytes.fromhex(previous_salt)
+        user_salted_password = hashlib.pbkdf2_hmac(
+            'sha256', user_new_password.encode('utf-8'), previous_salt_bytes, 100000)
+        flash(f"user_salted_password: {user_salted_password}")
+        flash(f"previous_password bytes: {bytes.fromhex(previous_password)}")
+
+        if user_salted_password == bytes.fromhex(previous_password):
+            return True
+    return False

@@ -54,7 +54,7 @@ CREATE TABLE password_history (
     history_id INT IDENTITY(1,1) PRIMARY KEY,
     user_id INT,
     password VARCHAR(200),
-    change_date DATETIME,
+    salt VARCHAR(64),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 GO

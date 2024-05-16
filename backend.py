@@ -7,7 +7,6 @@ from common_functions import *
 from app_configuration import app_configuration
 from flask_mail import Mail
 import random
-from flask import request, render_template
 
 app = Flask(__name__)
 app = app_configuration(app)
@@ -134,16 +133,14 @@ def set_new_pwd():
     if request.method == "POST":
         user_data = session.get('user_data')
         if user_data:
-            user_salt =bytes.fromhex(get_user_salt(user_id=user_data['user_id']))
             user_email = user_data["email"]
             new_password = request.form.get('new_pwd')
             if not validate_password(new_password):
                 return redirect(url_for('set_new_pwd', _method='GET'))
-            new_password_hashed = hashlib.pbkdf2_hmac(
-                'sha256', new_password.encode('utf-8'),
-                user_salt, 100000)  # save in bytes
-            change_user_password1(user_email, new_password_hashed.hex())
-            return render_template('login.html', password_changed=True)
+
+            if change_user_password_in_db(user_email, new_password):
+                flash("ENTERED HERE!!")
+                return render_template('login.html', password_changed=True)
         else:
             flash("No user data!")
             return render_template('set_new_pwd.html')

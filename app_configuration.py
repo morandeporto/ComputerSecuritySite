@@ -22,7 +22,7 @@ def app_configuration(app: Flask):
 
 def get_password_policy():
     file = open("password_config.json")
-    password_config = json.load(file)
+    password_config = json.load(file)["password_requirements"]
     policy = PasswordPolicy.from_names(
         length=password_config["password_len"],  # min length: 10
         # need min. 1 uppercase letters
@@ -34,3 +34,8 @@ def get_password_policy():
         nonletters=password_config["nonletters"]
     )
     return policy, password_config["salt_len"]
+
+def get_config_rules_messages():
+    file = open("password_config.json")
+    return json.load(file)["rules_messages"]
+
