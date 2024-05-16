@@ -32,7 +32,7 @@ def login():
             flash('User does not exist')
             return redirect(url_for('login'))
 
-        salt_bytes = bytes.fromhex(user_salt(user_id=user_data['user_id']))
+        salt_bytes = bytes.fromhex(get_user_salt(user_id=user_data['user_id']))
         login_hashed_pwd = hashlib.pbkdf2_hmac(
             'sha256', password.encode('utf-8'), salt_bytes, 100000)
         user_hashed_password = bytes.fromhex(user_data['password'])
@@ -134,7 +134,7 @@ def set_new_pwd():
     if request.method == "POST":
         user_data = session.get('user_data')
         if user_data:
-            user_salt = bytes.fromhex(user_data["salt"])
+            user_salt =bytes.fromhex(get_user_salt(user_id=user_data['user_id']))
             user_email = user_data["email"]
             new_password = request.form.get('new_pwd')
             if not validate_password(new_password):
@@ -142,7 +142,7 @@ def set_new_pwd():
             new_password_hashed = hashlib.pbkdf2_hmac(
                 'sha256', new_password.encode('utf-8'),
                 user_salt, 100000)  # save in bytes
-            change_user_password(user_email, new_password_hashed.hex())
+            change_user_password1(user_email, new_password_hashed.hex())
             return render_template('login.html', password_changed=True)
         else:
             flash("No user data!")

@@ -74,11 +74,11 @@ def get_client_data(client_id):
         return cursor.fetchone()
     
 
-def user_salt(user_id):
+def get_user_salt(user_id):
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
-        "SELECT * FROM users_info WHERE user_id = %s", (user_id,))
-    return cursor.fetchone()["salt"]
+        "SELECT * FROM user_info WHERE user_id = %s", (user_id,))
+        return cursor.fetchone()['salt']
 
 
 def check_if_user_exists_using_email(email: str) -> bool:
@@ -92,12 +92,15 @@ def check_if_user_exists_using_email(email: str) -> bool:
 def insert_new_user_to_db(new_username, new_password, new_email,salt):
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
-            "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)"
-            ,
+            "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
             (new_username, new_password, new_email))
-        cursor.execute (
-        "INSERT INTO users_info(username,salt) VALUES (%s, %s)",
-          (cursor.lastrowid, salt))
+        user_id=cursor.lastrowid
+        cursor.execute(
+        "INSERT INTO user_info (user_id,salt) VALUES (%s, %s)",
+          (user_id, salt))
+        cursor.execute(
+        "INSERT INTO password_history(user_id,password) VALUES (%s, %s)",
+          (user_id, new_password))
         
 
 def insert_user_sectors_selected_to_db(publish_sectors, user_id):
@@ -169,7 +172,7 @@ def send_email(mail, recipient, hash_code):
 
 
 
-def change_user_password(email, new_password):
+def change_user_password1(email, new_password):
     # Check if the new password matches any of the previous passwords
     previous_passwords = check_previous_passwords(email, new_password)
 
@@ -194,8 +197,8 @@ def check_previous_passwords(email, new_password):
 
         if user_id:
             # Retrieve the previous three passwords for the user
-            cursor.execute(
-                '''SELECT password FROM password_history WHERE user_id = %s ORDER BY history_id DESC LIMIT 3''',
+            cursor.execute ('''SELECT TOP 3 password FROM (SELECT password, ROW_NUMBER() OVER (ORDER BY history_id DESC) AS rn
+            FROM password_history WHERE user_id = %s) AS recent_passwords ORDER BY rn;''',
                 (user_id,))
             previous_passwords = [row['password'] for row in cursor.fetchall()]
             return previous_passwords
