@@ -69,32 +69,11 @@ tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
+
     </style>
 </head>
 <body>
 <div class="container">
-    {% if client_data %}
-    <div class="success-message">
-        <h3>Client: {{ client_data['first_name'] }} {{ client_data['last_name'] }} added successfully client data:</h3>
-        <table>
-            <thead>
-            <tr>
-                {% for field in client_data.keys() %}
-                <th>{{ field }}</th>
-                {% endfor %}
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                {% for value in client_data.values() %}
-                <td>{{ value }}</td>
-                {% endfor %}
-            </tr>
-            </tbody>
-        </table>
-
-    </div>
-    {% endif %}
 
     <h1>Welcome, {{ username }}!</h1>
 
@@ -103,9 +82,56 @@ tr:nth-child(even) {
         <button type="submit">Logout</button>
     </a>
 
+    <a href="{{ url_for('set_new_pwd') }}">
+        <button type="submit">change my password</button>
+    </a>
+
     <a href="{{ url_for('add_new_client') }}">
         <button type="submit">Add New Client</button>
     </a>
+    <br> <br> <br>
+     <form action="{{ url_for('search_client_data') }}" method="POST">
+            <h2>search for client:</h2>
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" placeholder="Enter client first name">
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" placeholder="Enter client last name">
+
+        <button type="submit">Search</button>
+    </form>
+        {% if client_data == ['False'] %}
+    <div class="error-message">
+        <h3>No client data found.</h3>
+    </div>
+
+    {% elif client_data %}
+        <div class="success-message">
+            <h3> Found clients data:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        {% for field in client_data[0].keys() %}
+                            <th>{{ field }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in client_data %}
+                    <tr>
+                        {% for value in client.values() %}
+                            <td>{{ value }}</td>
+                        {% endfor %}
+
+                    </tr>
+    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+
+
 </div>
 </body>
 </html>
