@@ -20,7 +20,7 @@ CREATE TABLE users (
     user_id INT IDENTITY(1,1) PRIMARY KEY,
     username VARCHAR(50),
     password VARCHAR(200),
-    email VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
     reset_token VARCHAR(200)
 );
 GO

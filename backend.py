@@ -46,7 +46,7 @@ def login():
 
     return render_template(
         'login.html',
-        user_added=request.args.get('user_added'))
+        user_added=request.args.get('user_added'), password_changed=request.args.get("password_changed"))
 
 
 @app.route('/logout')
@@ -61,25 +61,24 @@ def register():
     if request.method == 'POST':
         new_username = request.form.get('username')
         new_password = request.form.get('password')
+        new_email = request.form.get('email')
+        if check_if_user_exists_using_email(new_email):
+            flash("Email already exists! please use different email or login to your account.")
+            return redirect(url_for('register'))
         if not validate_password(new_password):
             return redirect(url_for('register'))
-        new_email = request.form.get('email')
         publish_sectors = request.form.getlist('publish_sectors[]')
 
         user_data = get_user_data_from_db(username=new_username)
         if user_data:
             flash('Username already exists')
             return redirect(url_for('register'))
-
-        user_salt = os.urandom(salt_len)
-        new_password_hashed = hashlib.pbkdf2_hmac(
-            'sha256', new_password.encode('utf-8'),
-            user_salt, 100000)  # save in bytes
+        new_password_hashed_hex, user_salt_hex = generate_new_password_hashed(new_password, generate_to_hex=True)
         insert_new_user_to_db(
             new_username,
-            new_password_hashed.hex(),
+            new_password_hashed_hex,
             new_email,
-            user_salt.hex())
+            user_salt_hex)
         user_id = get_user_data_from_db(username=new_username)['user_id']
         insert_user_sectors_selected_to_db(publish_sectors, user_id)
         session['username'] = new_username
@@ -95,13 +94,12 @@ def dashboard():
     if 'username' not in session:
         return redirect(url_for('login'))
     username = session['username']
-    clientid = request.args.get('clientid')
-    if clientid:  # if new client added
-        client_data = get_client_data(clientid)
-        return render_template(
-            'dashboard.html',
-            username=username,
-            client_data=client_data)
+    client_data = request.args.getlist('client_data')
+    if client_data == ['False']:
+        return render_template('dashboard.html', username=username, client_data=client_data)
+    if client_data != []:
+        client_data = [json.loads(data.replace("'", '"')) for data in client_data]
+        return render_template('dashboard.html', username=username, client_data=client_data)
     return render_template('dashboard.html', username=username)
 
 
@@ -130,8 +128,13 @@ def add_new_client():
 
 @app.route('/set_new_pwd', methods=['GET', 'POST'])
 def set_new_pwd():
+    user_data = session.get('user_data')
+    username = session.get("username")
+    if not user_data and not username:
+        return redirect(url_for('index'))
     if request.method == "POST":
-        user_data = session.get('user_data')
+        if not user_data:
+            user_data = get_user_data_from_db(username=username)
         if user_data:
             user_email = user_data["email"]
             new_password = request.form.get('new_pwd')
@@ -139,36 +142,18 @@ def set_new_pwd():
                 return redirect(url_for('set_new_pwd', _method='GET'))
 
             if change_user_password_in_db(user_email, new_password):
-                flash("ENTERED HERE!!")
-                return render_template('login.html', password_changed=True)
-        else:
-            flash("No user data!")
-            return render_template('set_new_pwd.html')
+                return redirect(url_for('login', password_changed=True))
 
-    # todo: Need to change the user password
     return render_template('set_new_pwd.html')
 
 
 @app.route("/password_change/<string:token>", methods=["GET", "POST"])
 def password_change(token):
     if request.method == "GET":
-        try:
-            with conn.cursor(as_dict=True) as cursor:
-                hashed_token = hashlib.sha1(
-                    token.encode('utf-8')).digest().hex()
-                flash(f'hashed_token= {hashed_token}', 'info')
-                cursor.execute(
-                    '''SELECT * FROM users WHERE reset_token = %s''',
-                    (hashed_token,))
-                user_data = cursor.fetchone()
-                session['user_data'] = user_data
-                print("GOING to set_new_pws")
-                return redirect(url_for('set_new_pwd'))
-        except BaseException:
-            flash('The code was not valid', 'error')
-            return render_template('password_reset.html')
-
-    else:
+        user_data = check_if_reset_token_exists(token)
+        if user_data:
+            session['user_data'] = user_data
+            return redirect(url_for('set_new_pwd'))
         flash('The code was not valid', 'error')
         return render_template('password_reset.html')
 
@@ -203,21 +188,14 @@ def password_reset():
         return render_template('password_reset.html')
 
 
-@app.route('/change_password', methods=['GET', 'POST'])
-def change_user_password():
-    if request.method == 'POST':
-        email = request.form['email']
-        new_password = request.form['new_password']
-
-        try:
-            change_user_password(email, new_password)
-            return "Password changed successfully!"
-        except ValueError as e:
-            # Return error message to user if the new password matches previous
-            # passwords
-            return str(e)
-    else:
-        return render_template('change_password.html')
+@app.route('/search_client_data', methods=['POST'])
+def search_client_data():
+    client_first_name = request.form.get('first_name')
+    client_last_name = request.form.get('last_name')
+    client_data = get_client_data_by_name(client_first_name, client_last_name)
+    if client_data:
+        return redirect(url_for('dashboard', client_data=client_data))
+    return redirect(url_for('dashboard', client_data=False))
 
 
 if __name__ == '__main__':
