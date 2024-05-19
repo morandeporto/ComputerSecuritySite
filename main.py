@@ -14,5 +14,7 @@ def create_db():
     con.commit()
     con.close()
 
+
+
 if __name__ == '__main__':
     create_db()

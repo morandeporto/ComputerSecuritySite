@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Welcome to the Dashboard</h1>
+    <p>Internet Package Type: {{ internet_package_type }}</p>
+    <p>Publish Sectors: {{ publish_sectors }}</p>
+
+    <!-- Logout Form -->
+    <form method="post" action="{{ url_for('login') }}">
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>
