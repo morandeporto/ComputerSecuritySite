@@ -1,8 +1,7 @@
-import hashlib
-import json
+import ast
 import string
 
-from flask import Flask, render_template, request, redirect, url_for, make_response, session
+from flask import render_template, request, redirect, url_for, session
 from common_functions import *
 from app_configuration import app_configuration
 from flask_mail import Mail
@@ -98,7 +97,7 @@ def dashboard():
     if client_data == ['False']:
         return render_template('dashboard.html', username=username, client_data=client_data)
     if client_data != []:
-        client_data = [json.loads(data.replace("'", '"')) for data in client_data]
+        client_data = [ast.literal_eval(data) for data in client_data]
         return render_template('dashboard.html', username=username, client_data=client_data)
     return render_template('dashboard.html', username=username)
 
