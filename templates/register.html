@@ -20,6 +20,7 @@
         <input type="email" id="email" name="email" required>
         <br><br>
         <label for="publish_sectors">Publish Sectors:</label>
+
         {% for sector in sectors %}
         <div class="checkbox">
             <input type="checkbox" id="{{ sector }}" name="publish_sectors[]" value="{{ sector }}">

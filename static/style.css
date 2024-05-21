@@ -11,7 +11,7 @@ p {
   text-align: center
 }
 body {
-  font-family: Arial,sans-serif;
+  font-family: Arial, sans-serif;
   background-color: #68c7ff;
   margin: 0;
   padding: 0;
@@ -36,8 +36,8 @@ h1 {
   margin-bottom: 20px
 }
 .success-message {
-  background-color: #b3e5fc;
-  color: #01579b;
+  background-color: #9DDAA7;
+  color: #F1F3F1;
   padding: 15px;
   border-radius: 8px
 }
