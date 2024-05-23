@@ -16,6 +16,7 @@ body {
   margin: 0;
   padding: 0;
   background-repeat: no-repeat;
+  background-size: cover;
   background-image: url("ComunicationLTD.png");
   display: flex;
   justify-content: center;
