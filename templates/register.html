@@ -21,12 +21,14 @@
         <br><br>
         <label for="publish_sectors">Publish Sectors:</label>
 
-        {% for sector in sectors %}
-        <div class="checkbox">
-            <input type="checkbox" id="{{ sector }}" name="publish_sectors[]" value="{{ sector }}">
-            <label for="{{ sector }}">{{ sector }}</label>
+        <div class="sectors-container">
+            {% for sector in sectors %}
+            <div class="checkbox">
+                <input type="checkbox" id="{{ sector }}" name="publish_sectors[]" value="{{ sector }}">
+                <label for="{{ sector }}">{{ sector }}</label>
+            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
         <br><br>
         <button type="submit">Create New Account</button>
         {% with messages = get_flashed_messages() %}
