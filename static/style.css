@@ -88,4 +88,16 @@ p a:hover {
   width: 100%
 }
 
+.sectors-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
 
+.checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox input {
+  margin-right: 10px;
+}
