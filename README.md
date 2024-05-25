@@ -14,8 +14,9 @@ This project has two branches. The first one has vulnerable code (for SQL inject
 
 You can find both of those versions in this repo:
 
-Invulnerable/Safe Version - https://github.com/eranbabayov/final_course_project/tree/main
-Vulnerable/Unsafe Version - https://github.com/eranbabayov/final_course_project/tree/hacked_version
+* Invulnerable/Safe Version - https://github.com/eranbabayov/final_course_project/tree/main
+
+* Vulnerable/Unsafe Version - https://github.com/eranbabayov/final_course_project/tree/hacked_version
 ## Setup / Run
 ### Prerequisites
 
