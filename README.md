@@ -7,7 +7,7 @@
 
 
 ## Docker Database Setup
-1. ** Change directory into the database folder **
+1. **Change directory into the database folder**
 ```bash
 cd database
 ```
@@ -17,7 +17,7 @@ docker build -t database .
 ```
 3.  **Set  the  `sa`  password  as  an  environment  variable**
 ```bash
-export  MSSQL_SA_PASSWORD=your-password
+export MSSQL_SA_PASSWORD=your-password
 ```
 4.  **Run  the  Docker  image  as  a  container**
 ```bash
@@ -29,7 +29,7 @@ sudo docker run \
 ```
 5.  **Verify  the  database  is  listening  on  port  1433**
 ```bash
-sudo lsof -nP  -i:1433
+sudo lsof -nP -i:1433
 ```
 6.  **Run  the  initialization  SQL  file  to  set  up  the  database  and  tables**
 ```bash
