@@ -3,14 +3,37 @@ import string
 
 from flask import render_template, request, redirect, url_for, session
 from common_functions import *
-from app_configuration import app_configuration
+from app_configuration import app_configuration, get_security_parameters
 from flask_mail import Mail
+from time import time
 import random
 
 app = Flask(__name__)
 app = app_configuration(app)
 mail = Mail(app)
 
+
+failed_login_attempts = {}
+blocked_ips = {}
+
+@app.before_request
+def limit_login_attempts():
+    ip_address = request.remote_addr
+    login_attempts, block_time = get_security_parameters()
+
+    if ip_address in blocked_ips:
+        if blocked_ips[ip_address] < time():
+            del blocked_ips[ip_address]
+            failed_login_attempts[ip_address] = 0
+        else:
+            remaining_time = blocked_ips[ip_address] - time()
+            return f"Your IP is blocked for {remaining_time} seconds", 403
+
+    failed_login_attempts[ip_address] = failed_login_attempts.get(ip_address, 0)
+
+    if failed_login_attempts[ip_address] >= login_attempts:
+        blocked_ips[ip_address] = time() + block_time
+        return f"Your IP is blocked for {block_time} seconds", 403
 
 @app.route('/')
 def index():
@@ -38,9 +61,11 @@ def login():
         if user_hashed_password == login_hashed_pwd:
             session['username'] = username
             session['user_id'] = user_data['user_id']
+            failed_login_attempts[request.remote_addr] = 0
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password')
+            failed_login_attempts[request.remote_addr] += 1
             return redirect(url_for('login'))
 
     return render_template(
