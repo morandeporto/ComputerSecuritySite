@@ -6,7 +6,8 @@ import json
 from password_strength import PasswordPolicy
 
 SALT_LENGTH = 32
-
+FAILED_LOGIN_ATTEMPTS = 3
+BLOCK_TIME_SECONDS = 300
 
 def app_configuration(app: Flask):
     load_dotenv()
@@ -19,6 +20,8 @@ def app_configuration(app: Flask):
     app.secret_key = os.getenv('MSSQL_SA_PASSWORD')
     return app
 
+def get_security_parameters():
+    return FAILED_LOGIN_ATTEMPTS, BLOCK_TIME_SECONDS
 
 def get_password_policy():
     file = open("password_config.json")
