@@ -162,13 +162,17 @@ def set_new_pwd():
         if user_data:
             user_email = user_data["email"]
             new_password = request.form.get('new_pwd')
+            old_password = request.form.get('old_pwd')
+            if not compare_to_current_password(old_password, user_data):
+                flash("The old password you inserted does not match the current used password.\nPlease try again")
+                return redirect(url_for('set_new_pwd', _method='GET')) 
             if not validate_password(new_password):
                 return redirect(url_for('set_new_pwd', _method='GET'))
 
             if change_user_password_in_db(user_email, new_password):
                 return redirect(url_for('login', password_changed=True))
 
-    return render_template('set_new_pwd.html')
+    return render_template('set_new_pwd.html', emailReset=request.args.get('emailReset'))
 
 
 @app.route("/password_change/<string:token>", methods=["GET", "POST"])
@@ -177,7 +181,7 @@ def password_change(token):
         user_data = check_if_reset_token_exists(token)
         if user_data:
             session['user_data'] = user_data
-            return redirect(url_for('set_new_pwd'))
+            return redirect(url_for('set_new_pwd', emailReset=True))
         flash('The code was not valid', 'error')
         return render_template('password_reset.html')
 
