@@ -213,6 +213,18 @@ def compare_passwords(user_new_password, previous_passwords_data) -> bool:
             return True
     return False
 
+def compare_to_current_password(password, user_data) -> bool:
+    current_password = user_data['password']
+    current_salt = bytes.fromhex(get_user_salt(user_data['user_id']))
+    hashed_password = hashlib.pbkdf2_hmac(
+            'sha256', password.encode('utf-8'),
+            current_salt, 100000)
+    if hashed_password == bytes.fromhex(current_password):
+        return True
+    else:
+        return False
+
+
 def generate_new_password_hashed(new_password, generate_to_hex = False):
     _, salt_len = get_password_policy()
     user_salt = os.urandom(salt_len)
