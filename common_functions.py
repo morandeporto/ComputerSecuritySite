@@ -213,7 +213,7 @@ def compare_passwords(user_new_password, previous_passwords_data) -> bool:
             return True
     return False
 
-def compare_to_current_password(password, user_data) -> bool:
+def compare_to_current_password( user_data, password='') -> bool:
     current_password = user_data['password']
     current_salt = bytes.fromhex(get_user_salt(user_data['user_id']))
     hashed_password = hashlib.pbkdf2_hmac(

@@ -69,7 +69,7 @@
         {{ message }}
     </div>
     {% endfor %}
-
+    
     <form action="{{ url_for('set_new_pwd') }}" method="POST">
         {% if not emailReset %}
         <label for="new_pwd">Old Password</label>
@@ -79,6 +79,9 @@
         <input type="password" name="new_pwd" placeholder="New Password" required>
         <input type="submit" value="Submit">
     </form>
+    
+
+
 </div>
 </body>
 </html>

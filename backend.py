@@ -163,14 +163,24 @@ def set_new_pwd():
             user_email = user_data["email"]
             new_password = request.form.get('new_pwd')
             old_password = request.form.get('old_pwd')
-            if not compare_to_current_password(old_password, user_data):
-                flash("The old password you inserted does not match the current used password.\nPlease try again")
-                return redirect(url_for('set_new_pwd', _method='GET')) 
-            if not validate_password(new_password):
-                return redirect(url_for('set_new_pwd', _method='GET'))
 
-            if change_user_password_in_db(user_email, new_password):
-                return redirect(url_for('login', password_changed=True))
+            if(isinstance(old_password,str)):
+                if not compare_to_current_password(user_data, old_password):
+                    flash("The old password you inserted does not match the current used password.\nPlease try again")
+                    return redirect(url_for('set_new_pwd', _method='GET')) 
+                
+                if not validate_password(new_password):
+                    return redirect(url_for('set_new_pwd', _method='GET'))
+                
+                if change_user_password_in_db(user_email, new_password):
+                    return redirect(url_for('login', password_changed=True))
+            
+            else: ## reset from email
+                if not validate_password(new_password):
+                    return redirect(url_for('set_new_pwd', emailReset=True))
+                if change_user_password_in_db(user_email, new_password):
+                    return redirect(url_for('login', password_changed=True))
+                return redirect(url_for('set_new_pwd', emailReset=True))
 
     return render_template('set_new_pwd.html', emailReset=request.args.get('emailReset'))
 
@@ -227,4 +237,4 @@ def search_client_data():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', debug=True)
