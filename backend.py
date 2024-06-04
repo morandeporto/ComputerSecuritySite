@@ -12,9 +12,9 @@ app = Flask(__name__)
 app = app_configuration(app)
 mail = Mail(app)
 
-
 failed_login_attempts = {}
 blocked_ips = {}
+
 
 @app.before_request
 def limit_login_attempts():
@@ -34,6 +34,7 @@ def limit_login_attempts():
     if failed_login_attempts[ip_address] >= login_attempts:
         blocked_ips[ip_address] = time() + block_time
         return f"Your IP is blocked for {block_time} seconds", 403
+
 
 @app.route('/')
 def index():
@@ -164,18 +165,18 @@ def set_new_pwd():
             new_password = request.form.get('new_pwd')
             old_password = request.form.get('old_pwd')
 
-            if(isinstance(old_password,str)):
+            if (isinstance(old_password, str)):
                 if not compare_to_current_password(user_data, old_password):
                     flash("The old password you inserted does not match the current used password.\nPlease try again")
-                    return redirect(url_for('set_new_pwd', _method='GET')) 
-                
+                    return redirect(url_for('set_new_pwd', _method='GET'))
+
                 if not validate_password(new_password):
                     return redirect(url_for('set_new_pwd', _method='GET'))
-                
+
                 if change_user_password_in_db(user_email, new_password):
                     return redirect(url_for('login', password_changed=True))
-            
-            else: ## reset from email
+
+            else:  # reset from email
                 if not validate_password(new_password):
                     return redirect(url_for('set_new_pwd', emailReset=True))
                 if change_user_password_in_db(user_email, new_password):
