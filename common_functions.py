@@ -78,10 +78,11 @@ def get_client_data(client_id):
             "SELECT * FROM clients WHERE client_id = %s", (client_id,))
         return cursor.fetchone()
 
+
 def get_client_data_by_name(first_name, last_name):
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
-            "SELECT * FROM clients WHERE first_name = %s AND last_name = %s", (first_name,last_name))
+            "SELECT * FROM clients WHERE first_name = %s AND last_name = %s", (first_name, last_name))
         return cursor.fetchall()
 
 
@@ -125,6 +126,7 @@ def insert_user_sectors_selected_to_db(publish_sectors, user_id):
                 "INSERT INTO user_sectors (user_id, sector_id) VALUES (%s, %s)",
                 (user_id, sector_id))
     conn.commit()
+
 
 def validate_password(password) -> bool:
     password_policy, _ = get_password_policy()
@@ -171,17 +173,19 @@ def change_user_password_in_db(email, new_password) -> bool:
         flash(
             "Please enter a new password that is not the same as your previous passwords.")
         return False
-    new_password_hashed_hex, user_salt_hex = generate_new_password_hashed(new_password,generate_to_hex=True)
+    new_password_hashed_hex, user_salt_hex = generate_new_password_hashed(new_password, generate_to_hex=True)
 
     # Update the user's password in the database
     with conn.cursor(as_dict=True) as cursor:
         cursor.execute(
             '''UPDATE users SET password = %s WHERE email = %s''',
             (new_password_hashed_hex, email))
-        cursor.execute('''UPDATE user_info SET salt = %s WHERE user_id = (SELECT user_id FROM users WHERE email = %s)''',
-                       (user_salt_hex, email))
-        cursor.execute('''INSERT INTO password_history (user_id,password,salt) VALUES ((SELECT user_id FROM users WHERE email = %s), %s, %s)''',
-                       (email, new_password_hashed_hex, user_salt_hex))
+        cursor.execute(
+            '''UPDATE user_info SET salt = %s WHERE user_id = (SELECT user_id FROM users WHERE email = %s)''',
+            (user_salt_hex, email))
+        cursor.execute(
+            '''INSERT INTO password_history (user_id,password,salt) VALUES ((SELECT user_id FROM users WHERE email = %s), %s, %s)''',
+            (email, new_password_hashed_hex, user_salt_hex))
         conn.commit()
     return True
 
@@ -213,19 +217,20 @@ def compare_passwords(user_new_password, previous_passwords_data) -> bool:
             return True
     return False
 
-def compare_to_current_password( user_data, password='') -> bool:
+
+def compare_to_current_password(user_data, password) -> bool:
     current_password = user_data['password']
     current_salt = bytes.fromhex(get_user_salt(user_data['user_id']))
     hashed_password = hashlib.pbkdf2_hmac(
-            'sha256', password.encode('utf-8'),
-            current_salt, 100000)
+        'sha256', password.encode('utf-8'),
+        current_salt, 100000)
     if hashed_password == bytes.fromhex(current_password):
         return True
     else:
         return False
 
 
-def generate_new_password_hashed(new_password, generate_to_hex = False):
+def generate_new_password_hashed(new_password, generate_to_hex=False):
     _, salt_len = get_password_policy()
     user_salt = os.urandom(salt_len)
     new_password_hashed = hashlib.pbkdf2_hmac(
@@ -234,6 +239,7 @@ def generate_new_password_hashed(new_password, generate_to_hex = False):
     if generate_to_hex:
         return new_password_hashed.hex(), user_salt.hex()
     return new_password_hashed, user_salt
+
 
 def check_if_reset_token_exists(reset_token):
     with conn.cursor(as_dict=True) as cursor:
