@@ -159,11 +159,17 @@ def insert_password_reset(email, hash_code):
 
 def send_email(mail, recipient, hash_code):
     msg = Message(
-        'Confirm Password Change',
-        sender='compsec2024@gmail.com',
-        recipients=[recipient])
-    msg.body = "Hello,\nWe've received a request to reset your password. If you want to reset your password, " \
-               "click the link below and enter your new password\n http://localhost:5000/password_change/" + hash_code
+        "Confirm Password Change",
+        sender="compsec2024@gmail.com",
+        recipients=[recipient],
+    )
+    msg.body = (
+        "Hello,\nWe've received a request to reset your password. If you want to reset your password, "
+        "click the link below and enter your new password\n http://localhost:5000/password_change/"
+        + hash_code
+        + "\n\nOr enter the following code in the password reset page: "
+        + hash_code
+    )
     mail.send(msg)
 
 
