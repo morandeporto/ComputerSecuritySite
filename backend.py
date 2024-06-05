@@ -185,6 +185,13 @@ def set_new_pwd():
 
     return render_template('set_new_pwd.html', emailReset=request.args.get('emailReset'))
 
+@app.route("/password_reset_token", methods=["GET", "POST"])
+def password_reset_token():
+    if request.method == "POST":
+        token = request.form.get("token")
+        return redirect(url_for('password_change', token=token))
+    return render_template('password_reset_token.html')
+
 
 @app.route("/password_change/<string:token>", methods=["GET", "POST"])
 def password_change(token):
@@ -219,7 +226,7 @@ def password_reset():
                 hash_code=random_string)
 
             flash('An email was sent check your mail inbox', 'info')
-            return redirect(url_for('password_reset'))
+            return redirect(url_for('password_reset_token'))
         else:
             flash('The user does not exist', 'error')
             return redirect(url_for('password_reset'))
@@ -238,4 +245,4 @@ def search_client_data():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0')
