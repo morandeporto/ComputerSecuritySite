@@ -1,11 +1,11 @@
-version: '3'
 services:
   database:
     build: ./database
     environment:
-      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=CommunicationLTD
     ports:
-      - "1433:1433"
+      - "3306:3306"
   web:
     build: .
     volumes:

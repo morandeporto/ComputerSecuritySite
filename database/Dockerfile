@@ -1,15 +1,5 @@
-FROM mcr.microsoft.com/mssql/server:2022-latest
-
-USER root
-
-ENV ACCEPT_EULA=Y
-
-COPY ./initialization.sql .
-COPY ./entrypoint.sh .
-
-RUN chmod +x ./entrypoint.sh
-RUN mkdir -p /var/opt/mssql/backup
-
-EXPOSE 1433
-
-CMD [ "/bin/bash", "./entrypoint.sh" ]
+FROM mysql:latest
+ENV MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+ENV MYSQL_DATABASE=CommunicationLTD
+COPY ./initialization.sql /docker-entrypoint-initdb.d/
+EXPOSE 3306

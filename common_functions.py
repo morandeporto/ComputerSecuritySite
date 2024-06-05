@@ -1,4 +1,4 @@
-import pymssql
+import mysql.connector
 import os
 import time
 from dotenv import load_dotenv
@@ -8,36 +8,35 @@ from flask_mail import Message
 import hashlib
 
 load_dotenv()
-password = os.getenv('MSSQL_SA_PASSWORD')
+password = os.getenv('MYSQL_ROOT_PASSWORD')
 
+conn = None
 while True:
     try:
-        conn = pymssql.connect(
-            "172.17.0.1",
-            "sa",
-            password,
-            "CommunicationLTD")
+        conn = mysql.connector.connect(
+            host="172.17.0.1",
+            user="root",
+            password=password,
+            database="CommunicationLTD")
         break
-    except pymssql.OperationalError:
+    except mysql.connector.Error as err:
+        print(f"Something went wrong: {err}")
         time.sleep(1)
-
-conn = pymssql.connect("172.17.0.1", "sa", password, "CommunicationLTD")
 
 
 def get_user_data_from_db(username=None, password=None):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         if username and password:
-            cursor.execute(
-                "SELECT * FROM users WHERE username = %s AND password = %s",
-                (username, password))
+            query = "SELECT * FROM users WHERE username = %s AND password = %s"
+            cursor.execute(query, (username, password))
         else:
-            cursor.execute(
-                f"SELECT * FROM users WHERE username = %s", (username,))
+            query = "SELECT * FROM users WHERE username = %s"
+            cursor.execute(query, (username,))
         return cursor.fetchone()
 
 
 def get_all_sectors_names_from_db():
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute("SELECT sector_name FROM sectors")
         sectors = cursor.fetchall()
         sectors = [sector['sector_name'] for sector in sectors]
@@ -45,7 +44,7 @@ def get_all_sectors_names_from_db():
 
 
 def insert_new_client(client_data):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             "INSERT INTO clients (representative_id, sector_id, package_id, ssn, first_name, last_name, email, phone_number) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
             (client_data['representative_id'],
@@ -62,7 +61,7 @@ def insert_new_client(client_data):
 
 
 def get_user_sectors(user_id):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             "SELECT sector_name, sectors.sector_id FROM sectors JOIN user_sectors ON sectors.sector_id = user_sectors.sector_id WHERE user_id = %s",
             (user_id,))
@@ -73,28 +72,28 @@ def get_user_sectors(user_id):
 
 
 def get_client_data(client_id):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             "SELECT * FROM clients WHERE client_id = %s", (client_id,))
         return cursor.fetchone()
 
 
 def get_client_data_by_name(first_name, last_name):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             "SELECT * FROM clients WHERE first_name = %s AND last_name = %s", (first_name, last_name))
         return cursor.fetchall()
 
 
 def get_user_salt(user_id):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             "SELECT * FROM user_info WHERE user_id = %s", (user_id,))
         return cursor.fetchone()['salt']
 
 
 def check_if_user_exists_using_email(email: str) -> bool:
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute("SELECT * FROM users WHERE email = %s ", (email,))
         if cursor.fetchone():  # todo: check if this condition works
             return True
@@ -102,7 +101,7 @@ def check_if_user_exists_using_email(email: str) -> bool:
 
 
 def insert_new_user_to_db(new_username, new_password, new_email, salt):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
             (new_username, new_password, new_email))
@@ -116,7 +115,7 @@ def insert_new_user_to_db(new_username, new_password, new_email, salt):
 
 
 def insert_user_sectors_selected_to_db(publish_sectors, user_id):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         for sector in publish_sectors:
             cursor.execute(
                 "SELECT sector_id FROM sectors WHERE sector_name = %s",
@@ -150,7 +149,7 @@ def validate_password(password) -> bool:
 
 
 def insert_password_reset(email, hash_code):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             '''UPDATE users SET reset_token = %s WHERE email = %s''',
             (hash_code, email))
@@ -182,7 +181,7 @@ def change_user_password_in_db(email, new_password) -> bool:
     new_password_hashed_hex, user_salt_hex = generate_new_password_hashed(new_password, generate_to_hex=True)
 
     # Update the user's password in the database
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         cursor.execute(
             '''UPDATE users SET password = %s WHERE email = %s''',
             (new_password_hashed_hex, email))
@@ -197,7 +196,7 @@ def change_user_password_in_db(email, new_password) -> bool:
 
 
 def check_previous_passwords(email, user_new_password):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         # Get the user_id based on the email
         cursor.execute(
             '''SELECT user_id FROM users WHERE email = %s''',
@@ -248,7 +247,7 @@ def generate_new_password_hashed(new_password, generate_to_hex=False):
 
 
 def check_if_reset_token_exists(reset_token):
-    with conn.cursor(as_dict=True) as cursor:
+    with conn.cursor(dictionary=True) as cursor:
         hashed_token = hashlib.sha1(
             reset_token.encode('utf-8')).digest().hex()
         cursor.execute(
