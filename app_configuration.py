@@ -17,7 +17,7 @@ def app_configuration(app: Flask):
     app.config['MAIL_PASSWORD'] = '***REMOVED***'
     app.config['MAIL_USE_TLS'] = False
     app.config['MAIL_USE_SSL'] = True
-    app.secret_key = os.getenv('MSSQL_SA_PASSWORD')
+    app.secret_key = os.getenv('MYSQL_ROOT_PASSWORD')
     return app
 
 def get_security_parameters():
