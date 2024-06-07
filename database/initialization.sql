@@ -59,26 +59,15 @@ CREATE TABLE user_info (
 
 INSERT INTO sectors (sector_name)
 VALUES
-('Technology'),
-('Science'),
-('Arts'),
-('Education'),
-('Health'),
-('Finance'),
-('Sports'),
-('Entertainment'),
-('Politics'),
-('Travel'),
-('Fashion'),
-('Food'),
-('Lifestyle'),
-('Business'),
-('Environment'),
-('Automotive'),
-('Real Estate'),
-('Law'),
-('Agriculture'),
-('Telecommunications');
+('Technology & Telecommunications'),
+('Science & Environment'),
+('Arts & Lifestyle'),
+('Education & Law'),
+('Health & Sports'),
+('Finance & Real Estate'),
+('Entertainment & Travel'),
+('Politics & Business'),
+('Food & Agriculture');
 
 INSERT INTO internet_packages (package_type)
 VALUES

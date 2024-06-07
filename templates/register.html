@@ -8,18 +8,18 @@
 </head>
 <body>
 <div class="login-container">
-    <h1>Create New Account</h1>
+    <h1>☕ Register ☕</h1>
     <form method="post" action="{{ url_for('register') }}">
-        <label for="username">Username:</label>
+        <label for="username">Username</label>
         <input type="text" id="username" name="username" required>
 
-        <label for="password">Password:</label>
+        <label for="password">Password</label>
         <input type="password" id="password" name="password" required>
 
-        <label for="email">Email:</label>
+        <label for="email">Email</label>
         <input type="email" id="email" name="email" required>
         <br><br>
-        <label for="publish_sectors">Publish Sectors:</label>
+        <label for="publish_sectors">Publish Sectors</label>
 
         <div class="sectors-container">
             {% for sector in sectors %}
