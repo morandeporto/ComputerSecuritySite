@@ -1,5 +1,6 @@
 services:
   database:
+    container_name: database-secure
     build: ./database
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -7,6 +8,7 @@ services:
     ports:
       - "3306:3306"
   web:
+    container_name: web-secure
     build: .
     volumes:
       - .:/app
