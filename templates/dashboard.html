@@ -8,6 +8,7 @@
 </head>
 <body>
 <div class="container">
+    {% autoescape false %}
 
     <h1>Welcome, {{ username }}!</h1>
 
@@ -67,7 +68,7 @@
     {% endif %}
 
 
-
+    {% endautoescape %}
 </div>
 </body>
 </html>
