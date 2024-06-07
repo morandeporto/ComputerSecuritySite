@@ -1,86 +1,102 @@
-h1,
-label,
-p {
-  color: #01579b
+h1,label,p {
+  color: #252320
 }
-.flashes,
-.flashes li,
-.success-message,
-h1,
-p {
+
+.flashes,.flashes li,.success-message,h1,h3,p {
   text-align: center
 }
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #68c7ff;
+  font-family: Arial,sans-serif;
   margin: 0;
   padding: 0;
   background-repeat: no-repeat;
   background-size: cover;
-  background-image: url("ComunicationLTD.png");
+  background-color: #96b6c5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 800 800'%3E%3Cg fill='none' stroke='%23ADC4CE' stroke-width='1'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126.5 879.5 40 599-197 493 102 382-31 229 126.5 79.5-69-63'/%3E%3Cpath d='M-31 229L237 261 390 382 603 493 308.5 537.5 101.5 381.5M370 905L295 764'/%3E%3Cpath d='M520 660L578 842 731 737 840 599 603 493 520 660 295 764 309 538 390 382 539 269 769 229 577.5 41.5 370 105 295 -36 126.5 79.5 237 261 102 382 40 599 -69 737 127 880'/%3E%3Cpath d='M520-140L578.5 42.5 731-63M603 493L539 269 237 261 370 105M902 382L539 269M390 382L102 382'/%3E%3Cpath d='M-222 42L126.5 79.5 370 105 539 269 577.5 41.5 927 80 769 229 902 382 603 493 731 737M295-36L577.5 41.5M578 842L295 764M40-201L127 80M102 382L-261 269'/%3E%3C/g%3E%3Cg fill='%23EEE0C9'%3E%3Ccircle cx='769' cy='229' r='5'/%3E%3Ccircle cx='539' cy='269' r='5'/%3E%3Ccircle cx='603' cy='493' r='5'/%3E%3Ccircle cx='731' cy='737' r='5'/%3E%3Ccircle cx='520' cy='660' r='5'/%3E%3Ccircle cx='309' cy='538' r='5'/%3E%3Ccircle cx='295' cy='764' r='5'/%3E%3Ccircle cx='40' cy='599' r='5'/%3E%3Ccircle cx='102' cy='382' r='5'/%3E%3Ccircle cx='127' cy='80' r='5'/%3E%3Ccircle cx='370' cy='105' r='5'/%3E%3Ccircle cx='578' cy='42' r='5'/%3E%3Ccircle cx='237' cy='261' r='5'/%3E%3Ccircle cx='390' cy='382' r='5'/%3E%3C/g%3E%3C/svg%3E");
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh
 }
-.login-container {
-  width: 25vw;
+
+.container,.login-container {
+  width: 40vw;
   margin: 50px auto;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0,0,0,.1);
-  background-color: rgba(255,255,255,.3)
+  background-color: #adc4ce
 }
-.success-message,
-form,
-h1 {
+
+.success-message,form,h1,table {
   margin-bottom: 20px
 }
-.success-message {
-  background-color: #9DDAA7;
-  color: #F1F3F1;
-  padding: 15px;
-  border-radius: 8px
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center
 }
+
+.success-message {
+  background-color: #9ddaa7;
+  color: #f1f3f1;
+  padding: 15px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
 h1 {
   font-size: 24px
 }
+
 label {
   font-weight: 700
 }
-input[type=password],
-input[type=text] {
+
+input,select,td,th {
+  border: 1px solid #ccc
+}
+
+button, input:not([type="checkbox"]), select {
   width: 100%;
+  border-radius: 4px;
+}
+
+input,select {
   padding: 10px;
   margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
   box-sizing: border-box
 }
+
 button {
-  width: 100%;
   padding: 10px 20px;
-  background-color: #01579b;
+  background-color: #252320;
   color: #fff;
-  border: none;
-  border-radius: 4px;
+  border: 0;
   cursor: pointer
 }
+
 button:hover {
-  background-color: #01395a
+  background-color: #5b574c
 }
+
 p a {
-  color: #01395a;
+  color: #010574;
   text-decoration: none
 }
+
 p a:hover {
   text-decoration: underline
 }
+
 .flashes {
   list-style-type: none;
   padding: 0;
   margin: 0
 }
+
 .flashes li {
   color: red;
   display: block;
@@ -90,14 +106,51 @@ p a:hover {
 
 .sectors-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2,1fr)
 }
 
 .checkbox {
   display: flex;
-  align-items: center;
+  align-items: center
 }
 
 .checkbox input {
-  margin-right: 10px;
+  margin-right: 10px
+}
+
+.alert-danger {
+  background-color: #f2dede;
+  color: #a94442;
+  padding: 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse
+}
+
+td,th {
+  padding: 8px;
+  text-align: left
+}
+
+th {
+  background-color: #4caf50;
+  color: #fff
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2
+}
+
+.client-container {
+  width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  background-color: rgba(255,255,255,.3);
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0,0,0,.1)
 }
