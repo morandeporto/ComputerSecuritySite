@@ -12,10 +12,10 @@ BLOCK_TIME_SECONDS = 300
 
 def app_configuration(app: Flask):
     load_dotenv()
-    app.config["MAIL_SERVER"] = "***REMOVED***"
+    app.config["MAIL_SERVER"] = "smtp.eu.mailgun.org"
     app.config["MAIL_PORT"] = 587
-    app.config["MAIL_USERNAME"] = "***REMOVED***"
-    app.config["MAIL_PASSWORD"] = "***REMOVED***"
+    app.config["MAIL_USERNAME"] = "YOURUSERNAME"
+    app.config["MAIL_PASSWORD"] = "YOURPASSWORD"
     app.config["MAIL_USE_TLS"] = True
     app.config["MAIL_USE_SSL"] = False
     app.secret_key = os.getenv("MYSQL_ROOT_PASSWORD")
