@@ -1,20 +1,13 @@
-h1,
-label,
-p {
-  color: #252320;
+h1,label,p {
+  color: #252320
 }
 
-.flashes,
-.flashes li,
-.success-message,
-h1,
-h3,
-p {
-  text-align: center;
+.flashes,.flashes li,.success-message,h1,h3,p {
+  text-align: center
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial,sans-serif;
   margin: 0;
   padding: 0;
   background-repeat: no-repeat;
@@ -24,30 +17,26 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100vh
 }
 
-.container,
-.login-container {
+.container,.login-container {
   width: 40vw;
   margin: 50px auto;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #adc4ce;
+  box-shadow: 0 0 10px rgba(0,0,0,.1);
+  background-color: #adc4ce
 }
 
-.success-message,
-form,
-h1,
-table {
-  margin-bottom: 20px;
+.success-message,form,h1,table {
+  margin-bottom: 20px
 }
 
 form {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: center
 }
 
 .success-message {
@@ -59,32 +48,26 @@ form {
 }
 
 h1 {
-  font-size: 24px;
+  font-size: 24px
 }
 
 label {
-  font-weight: 700;
+  font-weight: 700
 }
 
-input,
-select,
-td,
-th {
-  border: 1px solid #ccc;
+input,select,td,th {
+  border: 1px solid #ccc
 }
 
-button,
-input:not([type='checkbox']),
-select {
+button, input:not([type="checkbox"]), select {
   width: 100%;
   border-radius: 4px;
 }
 
-input,
-select {
+input,select {
   padding: 10px;
   margin-bottom: 15px;
-  box-sizing: border-box;
+  box-sizing: border-box
 }
 
 button {
@@ -92,47 +75,47 @@ button {
   background-color: #252320;
   color: #fff;
   border: 0;
-  cursor: pointer;
+  cursor: pointer
 }
 
 button:hover {
-  background-color: #5b574c;
+  background-color: #5b574c
 }
 
 p a {
   color: #010574;
-  text-decoration: none;
+  text-decoration: none
 }
 
 p a:hover {
-  text-decoration: underline;
+  text-decoration: underline
 }
 
 .flashes {
   list-style-type: none;
   padding: 0;
-  margin: 0;
+  margin: 0
 }
 
 .flashes li {
   color: red;
   display: block;
   margin-bottom: 10px;
-  width: 100%;
+  width: 100%
 }
 
 .sectors-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2,1fr)
 }
 
 .checkbox {
   display: flex;
-  align-items: center;
+  align-items: center
 }
 
 .checkbox input {
-  margin-right: 10px;
+  margin-right: 10px
 }
 
 .alert-danger {
@@ -141,35 +124,33 @@ p a:hover {
   padding: 15px;
   border-radius: 4px;
   margin-bottom: 20px;
-  text-align: center;
+  text-align: center
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: collapse
 }
 
-td,
-th {
+td,th {
   padding: 8px;
-  text-align: left;
+  text-align: left
 }
 
 th {
   background-color: #4caf50;
-  color: #fff;
+  color: #fff
 }
 
 tr:nth-child(even) {
-  background-color: #f2f2f2;
+  background-color: #f2f2f2
 }
 
 .client-container {
   width: 400px;
   margin: 50px auto;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255,255,255,.3);
   border-radius: 5px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0,0,0,.1)
 }
-/*גכדכ*/
